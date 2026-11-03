@@ -323,71 +323,125 @@ struct DashboardView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
                 
-                // Barra Controlli: Telemetria Live & Registrazione CSV
-                HStack(spacing: 12) {
-                    // Pulsante Demo Mode (Simulazione)
-                    Button(action: {
-                        obd2Manager.toggleDemoMode()
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: obd2Manager.isDemoMode ? "play.slash.fill" : "play.laptopcomputer")
-                            Text(obd2Manager.isDemoMode ? "Demo ON" : "Demo")
-                                .font(.caption)
-                                .bold()
+                // Control Center: Card Moderna Compatta per Telemetria, Rec e Demo
+                VStack(spacing: 10) {
+                    HStack(spacing: 8) {
+                        // 1. Tasto Telemetria Live (Play/Pausa)
+                        Button(action: {
+                            obd2Manager.toggleTelemetry()
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
+                                    .font(.subheadline)
+                                Text(obd2Manager.isPollingPaused ? "Avvia Live" : "Pausa Live")
+                                    .font(.subheadline)
+                                    .bold()
+                                    .lineLimit(1)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                obd2Manager.isPollingPaused
+                                    ? LinearGradient(colors: [Color.green.opacity(0.85), Color.green], startPoint: .top, endPoint: .bottom)
+                                    : LinearGradient(colors: [Color.orange.opacity(0.85), Color.orange], startPoint: .top, endPoint: .bottom)
+                            )
+                            .foregroundColor(.black)
+                            .cornerRadius(10)
+                            .shadow(color: (obd2Manager.isPollingPaused ? Color.green : Color.orange).opacity(0.3), radius: 4, x: 0, y: 2)
                         }
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 8)
+                        
+                        // 2. Tasto Registrazione CSV Telemetria
+                        Button(action: {
+                            obd2Manager.toggleRecording()
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: obd2Manager.isRecording ? "stop.fill" : "circle.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(obd2Manager.isRecording ? .white : .red)
+                                Text(obd2Manager.isRecording ? "Stop CSV" : "Registra")
+                                    .font(.subheadline)
+                                    .bold()
+                                    .lineLimit(1)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                obd2Manager.isRecording
+                                    ? Color.red
+                                    : Color.secondary.opacity(0.18)
+                            )
+                            .foregroundColor(obd2Manager.isRecording ? .white : .primary)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(obd2Manager.isRecording ? Color.red : Color.secondary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        
+                        // 3. Tasto Demo Mode (Simulatore)
+                        Button(action: {
+                            obd2Manager.toggleDemoMode()
+                        }) {
+                            HStack(spacing: 5) {
+                                Image(systemName: obd2Manager.isDemoMode ? "sparkles" : "play.laptopcomputer")
+                                    .font(.subheadline)
+                                Text(obd2Manager.isDemoMode ? "Demo ON" : "Demo")
+                                    .font(.subheadline)
+                                    .bold()
+                                    .lineLimit(1)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(
+                                obd2Manager.isDemoMode
+                                    ? LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                    : LinearGradient(colors: [Color.secondary.opacity(0.18), Color.secondary.opacity(0.18)], startPoint: .top, endPoint: .bottom)
+                            )
+                            .foregroundColor(obd2Manager.isDemoMode ? .white : .secondary)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(obd2Manager.isDemoMode ? Color.purple.opacity(0.6) : Color.secondary.opacity(0.3), lineWidth: 1)
+                            )
+                            .shadow(color: obd2Manager.isDemoMode ? Color.purple.opacity(0.4) : Color.clear, radius: 4, x: 0, y: 2)
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(obd2Manager.isDemoMode ? .purple : .secondary)
                     
-                    // Pulsante Attiva/Disattiva Telemetria Live
-                    Button(action: {
-                        obd2Manager.toggleTelemetry()
-                    }) {
+                    // Barra di Stato Live Elegante
+                    HStack {
                         HStack(spacing: 6) {
-                            Image(systemName: obd2Manager.isPollingPaused ? "play.circle.fill" : "stop.circle.fill")
-                                .font(.headline)
-                            Text(obd2Manager.isPollingPaused ? lang.t("telemetry_start") : lang.t("telemetry_stop"))
-                                .font(.subheadline)
-                                .bold()
+                            Circle()
+                                .fill(obd2Manager.isDemoMode ? Color.purple : (obd2Manager.isPollingPaused ? Color.gray : Color.green))
+                                .frame(width: 8, height: 8)
+                            Text(
+                                obd2Manager.isDemoMode
+                                    ? "Simulatore Banco Prova Attivo"
+                                    : (obd2Manager.isPollingPaused ? lang.t("telemetry_paused_notice") : lang.t("telemetry_active_notice"))
+                            )
+                            .font(.caption2)
+                            .bold()
+                            .foregroundColor(obd2Manager.isDemoMode ? .purple : (obd2Manager.isPollingPaused ? .secondary : .green))
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
-                    }
-                    .buttonStyle(BorderedProminentButtonStyle())
-                    .tint(obd2Manager.isPollingPaused ? .green : .orange)
-                    
-                    // Pulsante Registrazione CSV
-                    Button(action: {
-                        obd2Manager.toggleRecording()
-                    }) {
-                        HStack(spacing: 6) {
-                            Image(systemName: obd2Manager.isRecording ? "stop.circle.fill" : "record.circle")
-                                .font(.headline)
-                                .foregroundColor(obd2Manager.isRecording ? .red : .primary)
-                            Text(obd2Manager.isRecording ? lang.t("stop_csv") : lang.t("start_csv"))
-                                .font(.subheadline)
-                                .bold()
+                        
+                        Spacer()
+                        
+                        if obd2Manager.isRecording {
+                            HStack(spacing: 4) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 6))
+                                    .foregroundColor(.red)
+                                Text("REC CSV")
+                                    .font(.system(size: 10, weight: .black, design: .monospaced))
+                                    .foregroundColor(.red)
+                            }
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
                     }
-                    .buttonStyle(BorderedProminentButtonStyle())
-                    .tint(obd2Manager.isRecording ? .red : .blue)
+                    .padding(.horizontal, 4)
                 }
-                .padding(.horizontal, 20)
-                
-                // Indicatore di stato telemetria
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(obd2Manager.isPollingPaused ? Color.gray : Color.green)
-                        .frame(width: 8, height: 8)
-                    Text(obd2Manager.isPollingPaused ? lang.t("telemetry_paused_notice") : lang.t("telemetry_active_notice"))
-                        .font(.caption2)
-                        .foregroundColor(obd2Manager.isPollingPaused ? .secondary : .green)
-                }
-                .padding(.top, -10)
+                .padding(10)
+                .background(Color.secondary.opacity(0.08))
+                .cornerRadius(14)
+                .padding(.horizontal, 16)
                 
                 // Primary Dashboard
                 ViewThatFits(in: .horizontal) {
