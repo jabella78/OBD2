@@ -8,7 +8,7 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "YaDiagFree",
+    name: "YaDiag Free",
     platforms: [
         .iOS("16.0"),
         .macOS("13.0")
@@ -19,8 +19,8 @@ let package = Package(
             targets: ["AppModule"],
             bundleIdentifier: "com.jabella78.yadiag.free",
             teamIdentifier: "D4D9CCU3X7",
-            displayVersion: "1.0.2",
-            bundleVersion: "261103.202506",
+            displayVersion: "1.0.3",
+            bundleVersion: "261103.210119",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
             supportedDeviceFamilies: [

@@ -54,7 +54,7 @@ fi
 if [ "$TARGET" = "free" ] || [ "$TARGET" = "all" ]; then
     echo "📦 Compilazione iOS YaDiag Free..."
     cd /Users/jabella78/Documents/OBD2/YaDiagFree.swiftpm
-    xcodebuild -scheme YaDiagFree -destination 'generic/platform=iOS' -derivedDataPath /tmp/YaDiagFree_DerivedData -allowProvisioningUpdates build -quiet
+    xcodebuild -scheme "YaDiag Free" -destination 'generic/platform=iOS' -derivedDataPath /tmp/YaDiagFree_DerivedData -allowProvisioningUpdates build -quiet
     echo "✅ YaDiag Free compilata con successo."
     if [ -n "$DEVICE_CONNECTED" ]; then
         echo "📱 Installazione YaDiag Free su iPhone Privato..."

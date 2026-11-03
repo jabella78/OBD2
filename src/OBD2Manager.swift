@@ -121,16 +121,212 @@ class OBD2Manager: ObservableObject {
     
     @Published var lastABSRawTrace: [String] = []
     @Published var actuatorStatusMessage: String = "Ready."
-    @Published var iscLearningStatus: String = "--"
-    @Published var o2LearningStatus: String = "--"
-    @Published var coCylindersStatus: String = "--"
-    @Published var throttleCleaningStatus: String = "--"
     @Published var throttleDirtPercentage: Double = 0.0
     @Published var throttleCleaningLevel: Int = 0 // 0 = N/D, 1 = OK (Verde), 2 = Depositi Medi (Giallo), 3 = Pulizia Necessaria (Rosso)
-    private var coCyl1: String = "--"
-    private var coCyl2: String = "--"
-    private var coCyl3: String = "--"
-    private var lastISCMaxDelta: Int = 0
+    @Published var lastISCMaxDelta: Int = 0
+    @Published var iscW1: String = "--"
+    @Published var iscW2: String = "--"
+    @Published var iscW3: String = "--"
+    @Published var isISCLearningReset: Bool = false
+    @Published var o2Trim1: String = "--"
+    @Published var o2Trim2: String = "--"
+    @Published var o2Cycles: String = "--"
+    @Published var isO2Reset: Bool = false
+    @Published var coCyl1: String = "--"
+    @Published var coCyl2: String = "--"
+    @Published var coCyl3: String = "--"
+    @Published var isReadingEngineParams: Bool = false
+    @Published var iscTarget: String = ""
+    @Published var ecuCode67Flag: String = ""
+    @Published var ecuCode87Flag: String = ""
+    
+    func localizedThrottleCleaningStatus(for lang: AppLanguage? = nil) -> String {
+        let l = lang ?? LocalizationManager.shared.currentLanguage
+        if ecuCode67Flag == "0002" {
+            switch l {
+            case .italian: return "🔴 PULIZIA CORPI FARFALLATI RICHIESTA DALLA ECU! (Cod. Diag. 67 = 02 — Limite ISC raggiunto)."
+            case .english: return "🔴 THROTTLE BODY CLEANING REQUESTED BY ECU! (Diag Code 67 = 02 — ISC limit reached)."
+            case .french:  return "🔴 NETTOYAGE CORPS PAPILLONS REQUIS PAR L'ECU ! (Code Diag. 67 = 02 — Limite ISC atteinte)."
+            case .spanish: return "🔴 ¡LIMPIEZA DE CUERPOS DE MARIPOSA REQUERIDA POR LA ECU! (Cód. Diag. 67 = 02 — Límite ISC alcanzado)."
+            case .german:  return "🔴 DROSSELKLAPPENREINIGUNG VON DER ECU ANGEFORDERT! (Diag-Code 67 = 02 — ISC-Grenzwert erreicht)."
+            }
+        }
+        
+        var baseStr = ""
+        switch throttleCleaningLevel {
+        case 1:
+            switch l {
+            case .italian: baseStr = String(format: "🟢 CORPI FARFALLATI PULITI (Compensazione ISC: %.1f%%). Nessuna pulizia necessaria.", throttleDirtPercentage)
+            case .english: baseStr = String(format: "🟢 THROTTLE BODIES CLEAN (ISC Trim: %.1f%%). No cleaning required.", throttleDirtPercentage)
+            case .french:  baseStr = String(format: "🟢 CORPS PAPILLONS PROPRES (Trim ISC : %.1f%%). Aucun nettoyage requis.", throttleDirtPercentage)
+            case .spanish: baseStr = String(format: "🟢 CUERPOS DE MARIPOSA LIMPIOS (Compensación ISC: %.1f%%). Limpieza no requerida.", throttleDirtPercentage)
+            case .german:  baseStr = String(format: "🟢 DROSSELKLAPPEN SAUBER (ISC-Kompensation: %.1f%%). Keine Reinigung erforderlich.", throttleDirtPercentage)
+            }
+            if ecuCode67Flag == "0001" {
+                switch l {
+                case .italian: baseStr += " [Flag ECU Cod. 67 = 01 OK]"
+                case .english: baseStr += " [ECU Flag Code 67 = 01 OK]"
+                case .french:  baseStr += " [Flag ECU Code 67 = 01 OK]"
+                case .spanish: baseStr += " [Flag ECU Cód. 67 = 01 OK]"
+                case .german:  baseStr += " [ECU-Flag Code 67 = 01 OK]"
+                }
+            }
+            return baseStr
+        case 2:
+            switch l {
+            case .italian: return String(format: "🟡 DEPOSITI MODERATI RILEVATI (Apertura compensata: %.1f%%). Consigliata pulizia o reset ISC.", throttleDirtPercentage)
+            case .english: return String(format: "🟡 MODERATE DEPOSITS DETECTED (Compensated opening: %.1f%%). Cleaning or ISC reset advised.", throttleDirtPercentage)
+            case .french:  return String(format: "🟡 DÉPÔTS MODÉRÉS DÉTECTÉS (Ouverture compensée : %.1f%%). Nettoyage ou reset ISC conseillé.", throttleDirtPercentage)
+            case .spanish: return String(format: "🟡 DEPÓSITOS MODERADOS DETECTADOS (Apertura compensada: %.1f%%). Se recomienda limpieza o reset ISC.", throttleDirtPercentage)
+            case .german:  return String(format: "🟡 MITTLERE ABLAGERUNGEN ERKANNT (Kompensierte Öffnung: %.1f%%). Reinigung oder ISC-Reset empfohlen.", throttleDirtPercentage)
+            }
+        case 3:
+            switch l {
+            case .italian: return String(format: "🔴 PULIZIA CORPI FARFALLATI NECESSARIA! (Compensazione: %.1f%% — limite Cod. 242).", throttleDirtPercentage)
+            case .english: return String(format: "🔴 THROTTLE BODY CLEANING REQUIRED! (ISC Trim: %.1f%% — Event 242 limit).", throttleDirtPercentage)
+            case .french:  return String(format: "🔴 NETTOYAGE CORPS PAPILLONS REQUIS ! (Trim ISC : %.1f%% — limite atteinte).", throttleDirtPercentage)
+            case .spanish: return String(format: "🔴 ¡LIMPIEZA DE CUERPOS DE MARIPOSA REQUERIDA! (Compensación: %.1f%% — límite excedido).", throttleDirtPercentage)
+            case .german:  return String(format: "🔴 DROSSELKLAPPENREINIGUNG ERFORDERLICH! (ISC-Trim: %.1f%% — Grenzwert erreicht).", throttleDirtPercentage)
+            }
+        default:
+            switch l {
+            case .italian: return "⚪ Apprendimento azzerato o non disponibile. Avvia il motore per rilevare lo stato."
+            case .english: return "⚪ Learning reset or unavailable. Start engine at idle to detect condition."
+            case .french:  return "⚪ Apprentissage réinitialisé ou indisponible. Démarrez le moteur pour détecter l'état."
+            case .spanish: return "⚪ Aprendizaje restablecido o no disponible. Arranque el motor para detectar el estado."
+            case .german:  return "⚪ Adaption zurückgesetzt oder nicht verfügbar. Motor starten, um Zustand zu ermitteln."
+            }
+        }
+    }
+    
+    var throttleCleaningStatus: String {
+        return localizedThrottleCleaningStatus()
+    }
+    
+    func localizedISCLearningStatus(for lang: AppLanguage? = nil) -> String {
+        let l = lang ?? LocalizationManager.shared.currentLanguage
+        if isReadingEngineParams && iscW1 == "--" {
+            switch l {
+            case .italian: return "Lettura in corso..."
+            case .english: return "Reading in progress..."
+            case .french:  return "Lecture en cours..."
+            case .spanish: return "Lectura en curso..."
+            case .german:  return "Lesevorgang läuft..."
+            }
+        }
+        guard iscW1 != "--" else { return "--" }
+        let cyl = (l == .german) ? "Zyl" : "Cil"
+        let stLabel = (l == .english) ? "State:" : (l == .french ? "État :" : (l == .spanish ? "Estado:" : (l == .german ? "Status:" : "Stato:")))
+        
+        let stateDesc: String
+        if isISCLearningReset {
+            switch l {
+            case .italian: stateDesc = "⚠️ AZZERATO (Valori base 0x8000)"
+            case .english: stateDesc = "⚠️ RESET (Base values 0x8000)"
+            case .french:  stateDesc = "⚠️ RÉINITIALISÉ (Valeurs base 0x8000)"
+            case .spanish: stateDesc = "⚠️ RESTABLECIDO (Valores base 0x8000)"
+            case .german:  stateDesc = "⚠️ ZURÜCKGESETZT (Basiswerte 0x8000)"
+            }
+        } else {
+            switch throttleCleaningLevel {
+            case 1:
+                switch l {
+                case .italian: stateDesc = "✅ VALORI REGOLARI / PULITI (Reg. 0x54)"
+                case .english: stateDesc = "✅ COMPLIANT / CLEAN VALUES (Reg. 0x54)"
+                case .french:  stateDesc = "✅ VALEURS CONFORMES / PROPRES (Rég. 0x54)"
+                case .spanish: stateDesc = "✅ VALORES REGULARES / LIMPIOS (Reg. 0x54)"
+                case .german:  stateDesc = "✅ KONFORME / SAUBERE WERTE (Reg. 0x54)"
+                }
+            case 2:
+                switch l {
+                case .italian: stateDesc = "🟡 VALORI DEPOSITI MEDI (Reg. 0x54)"
+                case .english: stateDesc = "🟡 MODERATE DEPOSIT VALUES (Reg. 0x54)"
+                case .french:  stateDesc = "🟡 VALEURS DÉPÔTS MODÉRÉS (Rég. 0x54)"
+                case .spanish: stateDesc = "🟡 VALORES DEPÓSITOS MEDIOS (Reg. 0x54)"
+                case .german:  stateDesc = "🟡 MITTLERE ABLAGERUNGSWERTE (Reg. 0x54)"
+                }
+            case 3:
+                switch l {
+                case .italian: stateDesc = "🔴 LIMITE ISC SUPERATO (Reg. 0x54)"
+                case .english: stateDesc = "🔴 ISC LIMIT EXCEEDED (Reg. 0x54)"
+                case .french:  stateDesc = "🔴 LIMITE ISC DÉPASSÉE (Rég. 0x54)"
+                case .spanish: stateDesc = "🔴 LÍMITE ISC EXCEDIDO (Reg. 0x54)"
+                case .german:  stateDesc = "🔴 ISC-GRENZWERT ÜBERSCHRITTEN (Reg. 0x54)"
+                }
+            default:
+                stateDesc = "--"
+            }
+        }
+        return "\(cyl) #1: 0x\(iscW1) | \(cyl) #2: 0x\(iscW2) | \(cyl) #3: 0x\(iscW3)\n\(stLabel) \(stateDesc)"
+    }
+    
+    var iscLearningStatus: String {
+        return localizedISCLearningStatus()
+    }
+    
+    func localizedO2LearningStatus(for lang: AppLanguage? = nil) -> String {
+        let l = lang ?? LocalizationManager.shared.currentLanguage
+        if isReadingEngineParams && o2Trim1 == "--" {
+            switch l {
+            case .italian: return "Lettura in corso..."
+            case .english: return "Reading in progress..."
+            case .french:  return "Lecture en cours..."
+            case .spanish: return "Lectura en curso..."
+            case .german:  return "Lesevorgang läuft..."
+            }
+        }
+        guard o2Trim1 != "--" else { return "--" }
+        let stLabel = (l == .english) ? "State:" : (l == .french ? "État :" : (l == .spanish ? "Estado:" : (l == .german ? "Status:" : "Stato:")))
+        let cycLabel = (l == .english) ? "Cycles:" : (l == .french ? "Cycles :" : (l == .spanish ? "Ciclos:" : (l == .german ? "Zyklen:" : "Cicli:")))
+        
+        let stateDesc: String
+        if isO2Reset {
+            switch l {
+            case .italian: stateDesc = "⚠️ AZZERATO (0x0200 = Neutro Fabbrica)"
+            case .english: stateDesc = "⚠️ RESET (0x0200 = Factory Neutral)"
+            case .french:  stateDesc = "⚠️ RÉINITIALISÉ (0x0200 = Neutre usine)"
+            case .spanish: stateDesc = "⚠️ RESTABLECIDO (0x0200 = Neutro fábrica)"
+            case .german:  stateDesc = "⚠️ ZURÜCKGESETZT (0x0200 = Werkseinstellung)"
+            }
+        } else {
+            switch l {
+            case .italian: stateDesc = "✅ APPRESO REGOLARE (Reg. 0x52)"
+            case .english: stateDesc = "✅ ADAPTED NORMAL (Reg. 0x52)"
+            case .french:  stateDesc = "✅ APPRIS NORMAL (Rég. 0x52)"
+            case .spanish: stateDesc = "✅ APRENDIDO NORMAL (Reg. 0x52)"
+            case .german:  stateDesc = "✅ NORMAL ADAPTIERT (Reg. 0x52)"
+            }
+        }
+        var res = "Trim: 0x\(o2Trim1) / 0x\(o2Trim2) | \(cycLabel) 0x\(o2Cycles)\n\(stLabel) \(stateDesc)"
+        if !iscTarget.isEmpty {
+            res += "\nParametri Reg. 0x58: Target 0x\(iscTarget) (Flag Cod.67=\(ecuCode67Flag), Cod.87=\(ecuCode87Flag))"
+        }
+        return res
+    }
+    
+    var o2LearningStatus: String {
+        return localizedO2LearningStatus()
+    }
+    
+    func localizedCOCylindersStatus(for lang: AppLanguage? = nil) -> String {
+        let l = lang ?? LocalizationManager.shared.currentLanguage
+        if isReadingEngineParams && coCyl1 == "--" {
+            switch l {
+            case .italian: return "Lettura in corso..."
+            case .english: return "Reading in progress..."
+            case .french:  return "Lecture en cours..."
+            case .spanish: return "Lectura en curso..."
+            case .german:  return "Lesevorgang läuft..."
+            }
+        }
+        guard coCyl1 != "--" else { return "--" }
+        let cyl = (l == .german) ? "Zyl" : "Cil"
+        return "\(cyl) #1: \(coCyl1) | \(cyl) #2: \(coCyl2) | \(cyl) #3: \(coCyl3)"
+    }
+    
+    var coCylindersStatus: String {
+        return localizedCOCylindersStatus()
+    }
     
     var currentGear: String {
         if speed == 0 { return rpm > 0 ? "N" : "-" }
@@ -398,12 +594,19 @@ class OBD2Manager: ObservableObject {
                 de: "ABS-Code 41: Vorderrad-Geschwindigkeitssensor (anomales Signal / offener Stromkreis)"
             )
             self.absDtcCodes = [absDesc]
-            self.iscLearningStatus = "Cil #1: 0x82F0 | Cil #2: 0x8435 | Cil #3: 0x8435\nStato: 🟡 VALORI DEPOSITI MEDI (Reg. 0x54)"
-            self.o2LearningStatus = "Trim: 0x01FC / 0x0255 | Cicli: 0x000A\nStato: ✅ APPRESO REGOLARE (Reg. 0x52)"
-            self.coCylindersStatus = "Cil #1: 0x82 (+2) | Cil #2: 0x80 (0) | Cil #3: 0x81 (+1)"
+            self.iscW1 = "82F0"
+            self.iscW2 = "8435"
+            self.iscW3 = "8435"
+            self.isISCLearningReset = false
+            self.o2Trim1 = "01FC"
+            self.o2Trim2 = "0255"
+            self.o2Cycles = "000A"
+            self.isO2Reset = false
+            self.coCyl1 = "0x82 (+2)"
+            self.coCyl2 = "0x80 (0)"
+            self.coCyl3 = "0x81 (+1)"
             self.throttleCleaningLevel = 2
             self.throttleDirtPercentage = 42.0
-            self.throttleCleaningStatus = "🟡 DEPOSITI MEDI RILEVATI (Apertura compensata: 42%). Consigliata pulizia o reset ISC."
             let simConnectedMsg = self.localizedMsg(
                 en: "[SIMULATOR] Virtual OBD2 Adapter connected and active.",
                 it: "[SIMULATORE] Adattatore Virtuale OBD2 connesso e attivo.",
@@ -877,9 +1080,10 @@ class OBD2Manager: ObservableObject {
                 es: "🔍 Leyendo parámetros ISC, Sonda O2 y CO de la ECU Motor (7E8)...",
                 de: "🔍 Auslesen von ISC-, Lambda- und CO-Parametern aus Motor-ECU (7E8)..."
             )
-            self.iscLearningStatus = self.localizedMsg(en: "Reading in progress...", it: "Lettura in corso...", fr: "Lecture en cours...", es: "Lectura en curso...", de: "Lesevorgang läuft...")
-            self.o2LearningStatus = self.localizedMsg(en: "Reading in progress...", it: "Lettura in corso...", fr: "Lecture en cours...", es: "Lectura en curso...", de: "Lesevorgang läuft...")
-            self.coCylindersStatus = self.localizedMsg(en: "Reading in progress...", it: "Lettura in corso...", fr: "Lecture en cours...", es: "Lectura en curso...", de: "Lesevorgang läuft...")
+            self.isReadingEngineParams = true
+            self.iscW1 = "--"
+            self.o2Trim1 = "--"
+            self.coCyl1 = "--"
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -1530,17 +1734,17 @@ class OBD2Manager: ObservableObject {
                 let valHex = String(dataHex.prefix(2))
                 let delta = (Int(valHex, radix: 16) ?? 128) - 128
                 self.coCyl1 = "0x\(valHex) (\(delta >= 0 ? "+\(delta)" : "\(delta)"))"
-                self.coCylindersStatus = "Cil #1: \(self.coCyl1) | Cil #2: \(self.coCyl2) | Cil #3: \(self.coCyl3)"
+                self.isReadingEngineParams = false
             case "41":
                 let valHex = String(dataHex.prefix(2))
                 let delta = (Int(valHex, radix: 16) ?? 128) - 128
                 self.coCyl2 = "0x\(valHex) (\(delta >= 0 ? "+\(delta)" : "\(delta)"))"
-                self.coCylindersStatus = "Cil #1: \(self.coCyl1) | Cil #2: \(self.coCyl2) | Cil #3: \(self.coCyl3)"
+                self.isReadingEngineParams = false
             case "42":
                 let valHex = String(dataHex.prefix(2))
                 let delta = (Int(valHex, radix: 16) ?? 128) - 128
                 self.coCyl3 = "0x\(valHex) (\(delta >= 0 ? "+\(delta)" : "\(delta)"))"
-                self.coCylindersStatus = "Cil #1: \(self.coCyl1) | Cil #2: \(self.coCyl2) | Cil #3: \(self.coCyl3)"
+                self.isReadingEngineParams = false
             case "54":
                 // Apprendimento Minimo ISC (6 byte: 3 word da 16-bit centrati su 0x8000 = 32768)
                 // Valore originale pre-reset: 9092 7F47 7F20 | Valore riappreso: 82F0 8435 8435 | Azzerato: 8000 8000 8000
@@ -1548,10 +1752,11 @@ class OBD2Manager: ObservableObject {
                 let w2 = String(dataHex.dropFirst(4).prefix(4))
                 let w3 = String(dataHex.dropFirst(8).prefix(4))
                 let isReset = (w1 == "8000" && w2 == "8000" && w3 == "8000")
-                let stateTag = isReset
-                    ? (self.isLangIT ? "⚠️ AZZERATO (Valori base 0x8000)" : "⚠️ RESET (Base 0x8000)")
-                    : (self.isLangIT ? "✅ APPRESO REGOLARE" : "✅ ADAPTED NORMAL")
-                self.iscLearningStatus = "Cyl #1: 0x\(w1) | Cyl #2: 0x\(w2) | Cyl #3: 0x\(w3)\n\(self.isLangIT ? "Stato:" : "State:") \(stateTag)"
+                self.iscW1 = w1
+                self.iscW2 = w2
+                self.iscW3 = w3
+                self.isISCLearningReset = isReset
+                self.isReadingEngineParams = false
                 
                 // Calcolo compensazione depositi corpi farfallati rispetto allo zero di fabbrica 0x8000 (32768)
                 // Escursione massima prima del limite superiore (Event Code 242 / Cod. 67 = 02): ±0x2000 (8192 step)
@@ -1565,24 +1770,12 @@ class OBD2Manager: ObservableObject {
                 
                 if isReset {
                     self.throttleCleaningLevel = 0
-                    self.throttleCleaningStatus = self.isLangIT
-                        ? "⚪ Apprendimento appena azzerato (0%). Avvia il motore al minimo per rilevare lo stato dei corpi farfallati."
-                        : "⚪ Learning freshly reset (0%). Start engine at idle to detect throttle body condition."
                 } else if pct < 35.0 {
                     self.throttleCleaningLevel = 1
-                    self.throttleCleaningStatus = self.isLangIT
-                        ? String(format: "🟢 CORPI FARFALLATI PULITI (Compensazione ISC: %.1f%% — +%d step da 0x8000). Nessuna pulizia necessaria.", pct, maxDelta)
-                        : String(format: "🟢 THROTTLE BODIES CLEAN (ISC Trim: %.1f%% — +%d steps from 0x8000). No cleaning required.", pct, maxDelta)
                 } else if pct < 75.0 {
                     self.throttleCleaningLevel = 2
-                    self.throttleCleaningStatus = self.isLangIT
-                        ? String(format: "🟡 DEPOSITI MODERATI (Compensazione ISC: %.1f%% — +%d step da 0x8000). Pulizia consigliata al prossimo tagliando.", pct, maxDelta)
-                        : String(format: "🟡 MODERATE DEPOSITS (ISC Trim: %.1f%% — +%d steps from 0x8000). Cleaning recommended at next service.", pct, maxDelta)
                 } else {
                     self.throttleCleaningLevel = 3
-                    self.throttleCleaningStatus = self.isLangIT
-                        ? String(format: "🔴 PULIZIA NECESSARIA! (Compensazione ISC: %.1f%% — limite Cod. 242).", pct)
-                        : String(format: "🔴 CLEANING REQUIRED! (ISC Trim: %.1f%% — Event 242 limit).", pct)
                 }
             case "52":
                 // Apprendimento Sonda Lambda O2 (Cod. 87)
@@ -1591,26 +1784,23 @@ class OBD2Manager: ObservableObject {
                 let trim1 = String(dataHex.dropFirst(4).prefix(4))
                 let trim2 = String(dataHex.dropFirst(8).prefix(4))
                 let count = String(dataHex.dropFirst(12).prefix(4))
-                let isReset = (trim1 == "0200" && trim2 == "0200")
-                let stateTag = isReset
-                    ? (self.isLangIT ? "⚠️ AZZERATO (0x0200 = Neutro Fabbrica)" : "⚠️ RESET (0x0200 = Factory Neutral)")
-                    : (self.isLangIT ? "✅ APPRESO REGOLARE" : "✅ ADAPTED NORMAL")
-                self.o2LearningStatus = "Trim: 0x\(trim1) / 0x\(trim2) | \(self.isLangIT ? "Cicli:" : "Cycles:") 0x\(count)\n\(self.isLangIT ? "Stato:" : "State:") \(stateTag)"
+                self.o2Trim1 = trim1
+                self.o2Trim2 = trim2
+                self.o2Cycles = count
+                self.isO2Reset = (trim1 == "0200" && trim2 == "0200")
+                self.isReadingEngineParams = false
             case "58":
                 // Registro 0x58: <TargetISC 16-bit> <Flag Cod. 67 (00=Azzerato, 01=OK, 02=Pulizia Necessaria)> <Flag Cod. 87>
                 let p1 = String(dataHex.prefix(4))
                 let code67Flag = String(dataHex.dropFirst(4).prefix(4))
                 let code87Flag = String(dataHex.dropFirst(8).prefix(4))
-                self.o2LearningStatus += "\nParametri Reg. 0x58: Target 0x\(p1) (Flag Cod.67=\(code67Flag), Cod.87=\(code87Flag))"
+                self.iscTarget = p1
+                self.ecuCode67Flag = code67Flag
+                self.ecuCode87Flag = code87Flag
                 
                 // Verifica flag ufficiale Yamaha Cod. 67 (Manuale pag. 3-8 e pag. 9-15: "02" -> Clean the throttle bodies)
                 if code67Flag == "0002" {
                     self.throttleCleaningLevel = 3
-                    self.throttleCleaningStatus = self.isLangIT
-                        ? "🔴 PULIZIA CORPI FARFALLATI RICHIESTA DALLA ECU! (Cod. Diag. 67 = 02 — Manuale pag. 3-8: limite ISC raggiunto)."
-                        : "🔴 THROTTLE BODY CLEANING REQUESTED BY ECU! (Diag Code 67 = 02 — Manual p. 3-8: ISC limit reached)."
-                } else if code67Flag == "0001" && self.throttleCleaningLevel == 1 {
-                    self.throttleCleaningStatus += self.isLangIT ? " [Flag ECU Cod. 67 = 01 OK]" : " [ECU Flag Code 67 = 01 OK]"
                 }
             default:
                 break
