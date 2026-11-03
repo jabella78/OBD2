@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - YaDiag Free & YaDiag Pro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 { color: #111; font-size: 28px; border-bottom: 2px solid #0066cc; padding-bottom: 10px; }
+        h2 { color: #0066cc; font-size: 20px; margin-top: 30px; }
+        p, li { font-size: 15px; color: #444; }
+        ul { padding-left: 20px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; background: #e6f2ff; color: #0066cc; }
+        footer { margin-top: 40px; text-align: center; font-size: 13px; color: #888; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <span class="badge">Privacy Statement</span>
+    <h1>Privacy Policy - YaDiag Free &amp; YaDiag Pro</h1>
+    <p><em>Last updated: November 3, 2026</em></p>
+
+    <p>This Privacy Policy outlines how data is handled by <strong>YaDiag Free</strong> and <strong>YaDiag Pro</strong> (hereinafter referred to as the "Application"), developed by Jacopo Bellarosa.</p>
+
+    <h2>1. Core Principles &amp; Zero Tracking</h2>
+    <p>User privacy is a core architectural principle of our software. The Application:</p>
+    <ul>
+        <li><strong>Does NOT collect personally identifiable information</strong> (such as name, email, phone number, or IP address).</li>
+        <li><strong>Does NOT use third-party advertising SDKs or frameworks</strong>.</li>
+        <li><strong>Does NOT track user activity</strong> across other companies' apps or websites (No IDFA or tracking, compliant with Apple App Tracking Transparency guidelines).</li>
+    </ul>
+
+    <h2>2. Bluetooth Low Energy (BLE) Usage</h2>
+    <p>The Application requests system permission to access Bluetooth exclusively to communicate locally with standard OBD2 diagnostic adapters (e.g., vLinker MC+, UniCarScan UCSI-2100, OBDLink CX/MX+) and transmit diagnostic frames over KWP2000 / UDS / ISO 15765-4 bus with the motorcycle's onboard ECUs.</p>
+    <ul>
+        <li>Telemetry data exchanged via Bluetooth (engine RPM, vehicle speed, temperatures, Diagnostic Trouble Codes) remains strictly in the volatile memory of your iPhone.</li>
+        <li>No geographical location or driving history data is ever derived, stored, or transmitted.</li>
+    </ul>
+
+    <h2>3. On-Device Local Storage (Keychain &amp; UserDefaults)</h2>
+    <p>The Application stores on the user's device:</p>
+    <ul>
+        <li><strong>UserDefaults:</strong> User interface language preferences, units of measurement, and acknowledgment of safety disclaimers (Apple required reason code: <code>CA92.1</code>).</li>
+        <li><strong>Apple Keychain:</strong> If the user chooses to configure an optional API key for the AI Diagnostic Advisor (BYOK - Bring Your Own Key), that credential is encrypted and stored exclusively in the on-device Apple Keychain. It is never synced or sent to our servers.</li>
+    </ul>
+
+    <h2>4. AI Diagnostic Advisor (Optional Feature)</h2>
+    <p>The AI Diagnostic Advisor is completely optional. Any telemetry data submitted for analysis includes only anonymous engine parameters and DTC fault codes (RPM, TPS, sensor voltages). Data is transmitted over encrypted HTTPS directly to the official endpoint of the AI provider chosen by the user, only after explicit user confirmation. No motorcycle identifiers or personal user data are attached.</p>
+
+    <h2>5. User Rights &amp; Contact</h2>
+    <p>Since the Application does not store or process personal data on external servers, no user profiles exist. For any technical questions or inquiries regarding this policy, please contact:</p>
+    <p><strong>Technical Support &amp; Developer:</strong> Jacopo Bellarosa<br>
+    <strong>Email:</strong> support@yadiag.app (or jabella78@gmail.com)</p>
+</div>
+<footer>
+    &copy; 2026 Jacopo Bellarosa - YaDiag. All rights reserved.
+</footer>
+</body>
+</html>
