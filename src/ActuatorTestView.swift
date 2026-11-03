@@ -231,13 +231,15 @@ struct ActuatorTestView: View {
                                         if !StoreManager.shared.isProUnlocked {
                                             Image(systemName: "lock.fill")
                                             Text("Sblocca con YaDiag Pro")
-                                                .font(.system(size: 14, weight: .bold))
+                                                .font(.system(size: 13, weight: .bold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.75)
                                         } else {
                                             Image(systemName: actuator.isABSTest ? "drop.fill" : "arrow.counterclockwise")
-                                            Text(actuator.isABSTest ? (obd2Manager.isABSTestRunning ? "Test in corso (\(obd2Manager.absTestCountdown)s)..." : "Avvia Test Pompa ABS") : "Esegui Reset Adattivo (Cod. \(actuator.code))")
-                                                .font(.system(size: 14, weight: .bold))
+                                            Text(actuator.isABSTest ? (obd2Manager.isABSTestRunning ? "Test in corso (\(obd2Manager.absTestCountdown)s)..." : "Avvia Test Pompa ABS") : "Reset Adattivo (Cod. \(actuator.code))")
+                                                .font(.system(size: 13, weight: .bold))
                                                 .lineLimit(1)
-                                                .minimumScaleFactor(0.85)
+                                                .minimumScaleFactor(0.75)
                                         }
                                     }
                                     .frame(maxWidth: .infinity)
@@ -289,22 +291,25 @@ struct ActuatorTestView: View {
     private var engineParametersSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label("Parametri & Apprendimenti Motore", systemImage: "waveform.path.ecg.rectangle.fill")
+                Label("Parametri Motore", systemImage: "waveform.path.ecg.rectangle.fill")
                     .font(.subheadline)
                     .bold()
                     .foregroundColor(.cyan)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                 Spacer()
                 Button(action: {
                     obd2Manager.verifyISCAndO2Values()
                 }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 5) {
                         Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 11))
                         Text("Verifica Valori")
-                            .bold()
+                            .font(.system(size: 12, weight: .bold))
+                            .lineLimit(1)
                     }
-                    .font(.caption)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color.cyan)
                     .foregroundColor(.black)
                     .cornerRadius(8)

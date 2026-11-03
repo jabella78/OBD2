@@ -564,7 +564,7 @@ struct DiagnosticsView: View {
                         
                         // Riga 2: Ricerca codice manuale + Scansione automatica CAN
                         HStack(spacing: 8) {
-                            let searchPlaceholder = lang.currentLanguage == .english ? "Search ABS Code (11-64)" : (lang.currentLanguage == .french ? "Chercher Code ABS (11-64)" : (lang.currentLanguage == .spanish ? "Buscar Código ABS (11-64)" : (lang.currentLanguage == .german ? "ABS-Code suchen (11-64)" : "Cerca Cod. ABS (11-64)")))
+                            let searchPlaceholder = lang.currentLanguage == .english ? "ABS Code (11-64)" : (lang.currentLanguage == .french ? "Code ABS (11-64)" : (lang.currentLanguage == .spanish ? "Cód. ABS (11-64)" : (lang.currentLanguage == .german ? "ABS-Code (11-64)" : "Cod. ABS (11-64)")))
                             TextField(searchPlaceholder, text: $manualABSCodeInput)
                                 .textFieldStyle(.roundedBorder)
                                 .font(.subheadline)
@@ -579,8 +579,9 @@ struct DiagnosticsView: View {
                                 manualABSCodeInput = ""
                             }) {
                                 Text(lang.currentLanguage == .english ? "Search" : (lang.currentLanguage == .french ? "Chercher" : (lang.currentLanguage == .spanish ? "Buscar" : (lang.currentLanguage == .german ? "Suchen" : "Cerca"))))
-                                    .font(.system(size: 13, weight: .bold))
-                                    .padding(.horizontal, 14)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .lineLimit(1)
+                                    .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
                                     .background(Color.blue)
                                     .foregroundColor(.white)
@@ -588,12 +589,14 @@ struct DiagnosticsView: View {
                             }
                             
                             Button(action: { obd2Manager.scanABSAddresses() }) {
-                                HStack(spacing: 5) {
+                                HStack(spacing: 4) {
                                     Image(systemName: "antenna.radiowaves.left.and.right")
+                                        .font(.system(size: 12))
                                     Text("Auto-Scan")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .lineLimit(1)
                                 }
-                                .font(.system(size: 13, weight: .bold))
-                                .padding(.horizontal, 12)
+                                .padding(.horizontal, 10)
                                 .padding(.vertical, 8)
                                 .background(Color.orange.opacity(0.18))
                                 .foregroundColor(.orange)
@@ -612,14 +615,16 @@ struct DiagnosticsView: View {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     // 1. Scansiona Errori
                     Button(action: { obd2Manager.readErrors() }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 15, weight: .bold))
-                            Text(obd2Manager.selectedECU == .engine ? lang.t("scan_dtc_btn") : "ABS • " + lang.t("scan_dtc_btn"))
                                 .font(.system(size: 13, weight: .bold))
+                            Text(lang.t("scan_dtc_btn"))
+                                .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .padding(.horizontal, 6)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                         .background(
                             obd2Manager.selectedECU == .engine
                                 ? LinearGradient(colors: [Color.blue.opacity(0.85), Color.blue], startPoint: .top, endPoint: .bottom)
@@ -627,19 +632,21 @@ struct DiagnosticsView: View {
                         )
                         .foregroundColor(.white)
                         .cornerRadius(10)
-                        .shadow(color: (obd2Manager.selectedECU == .engine ? Color.blue : Color.orange).opacity(0.25), radius: 4, x: 0, y: 2)
+                        .shadow(color: (obd2Manager.selectedECU == .engine ? Color.blue : Color.orange).opacity(0.25), radius: 3, x: 0, y: 2)
                     }
                     
                     // 2. Cancella Errori
                     Button(action: { obd2Manager.clearErrors() }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: "trash.fill")
-                                .font(.system(size: 14))
-                            Text(obd2Manager.selectedECU == .engine ? lang.t("clear_dtc_btn") : "ABS • " + lang.t("clear_dtc_btn"))
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: 13))
+                            Text(lang.t("clear_dtc_btn"))
+                                .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .padding(.horizontal, 6)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                         .background(Color.red.opacity(0.15))
                         .foregroundColor(.red)
                         .cornerRadius(10)
@@ -653,20 +660,22 @@ struct DiagnosticsView: View {
                         }
                         showingAIConsentAlert = true
                     }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: "sparkles")
-                                .font(.system(size: 14, weight: .bold))
-                            Text(lang.t("ai_eval_btn"))
                                 .font(.system(size: 13, weight: .bold))
+                            Text(lang.t("ai_eval_btn"))
+                                .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .padding(.horizontal, 6)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                         .background(
                             LinearGradient(colors: [Color.purple.opacity(0.9), Color.indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
                         )
                         .foregroundColor(.white)
                         .cornerRadius(10)
-                        .shadow(color: Color.purple.opacity(0.3), radius: 4, x: 0, y: 2)
+                        .shadow(color: Color.purple.opacity(0.3), radius: 3, x: 0, y: 2)
                     }
                     
                     // 4. Analisi Corsa Telemetria
@@ -680,15 +689,17 @@ struct DiagnosticsView: View {
                             aiManager.evaluationResult = lang.currentLanguage == .english ? "No telemetry data found. Start recording in Dashboard." : (lang.currentLanguage == .french ? "Aucune donnée de télémétrie. Démarrez l'enregistrement." : (lang.currentLanguage == .spanish ? "Sin datos de telemetría. Inicia la grabación en el Tablero." : (lang.currentLanguage == .german ? "Keine Telemetriedaten gefunden. Aufnahme im Cockpit starten." : "Nessun dato di telemetria trovato. Avvia la registrazione nel Cruscotto.")))
                         }
                     }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: "chart.xyaxis.line")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.system(size: 13, weight: .bold))
                             let telemTitle = lang.currentLanguage == .english ? "Telemetry (AI)" : (lang.currentLanguage == .french ? "Télémétrie (IA)" : (lang.currentLanguage == .spanish ? "Telemetría (IA)" : (lang.currentLanguage == .german ? "Telemetrie (KI)" : "Analisi Corsa (AI)")))
                             Text(telemTitle)
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .padding(.horizontal, 6)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                         .background(Color.secondary.opacity(0.18))
                         .foregroundColor(.primary)
                         .cornerRadius(10)
@@ -933,7 +944,7 @@ struct ConnectionView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 13, weight: .bold))
-                            Text("Connetti Adattatore Virtuale (Simulatore)")
+                            Text("Connetti Simulatore Virtuale")
                                 .font(.system(size: 13, weight: .bold))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.85)
@@ -1042,40 +1053,45 @@ struct TerminalView: View {
         VStack(spacing: 10) {
             HStack {
                 Text(lang.t("term_title"))
-                    .font(.title2)
+                    .font(.title3)
                     .bold()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 
                 Spacer()
                 
-                Button(action: { obd2Manager.toggleTelemetry() }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
-                            .font(.system(size: 13, weight: .bold))
-                        Text(obd2Manager.isPollingPaused ? lang.t("telemetry_start") : lang.t("telemetry_stop"))
-                            .font(.system(size: 13, weight: .bold))
-                            .lineLimit(1)
+                HStack(spacing: 8) {
+                    Button(action: { obd2Manager.toggleTelemetry() }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
+                                .font(.system(size: 12, weight: .bold))
+                            Text(obd2Manager.isPollingPaused ? "Live" : "Pausa")
+                                .font(.system(size: 12, weight: .bold))
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background(obd2Manager.isPollingPaused ? Color.green : Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .shadow(color: (obd2Manager.isPollingPaused ? Color.green : Color.orange).opacity(0.3), radius: 3, x: 0, y: 1)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(obd2Manager.isPollingPaused ? Color.green : Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .shadow(color: (obd2Manager.isPollingPaused ? Color.green : Color.orange).opacity(0.3), radius: 3, x: 0, y: 1)
-                }
-                
-                Button(action: { obd2Manager.terminalOutput.removeAll() }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 13))
-                        Text(lang.t("term_clear"))
-                            .font(.system(size: 13, weight: .medium))
+                    
+                    Button(action: { obd2Manager.terminalOutput.removeAll() }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 12))
+                            Text(lang.t("term_clear"))
+                                .font(.system(size: 12, weight: .medium))
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background(Color.secondary.opacity(0.18))
+                        .foregroundColor(.primary)
+                        .cornerRadius(8)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .background(Color.secondary.opacity(0.18))
-                    .foregroundColor(.primary)
-                    .cornerRadius(8)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
                 }
             }
             .padding(.horizontal)
@@ -1205,7 +1221,7 @@ struct SettingsView: View {
                                     Text("Acquista YaDiag Pro (29,99 €)")
                                         .font(.system(size: 14, weight: .bold))
                                         .lineLimit(1)
-                                        .minimumScaleFactor(0.85)
+                                        .minimumScaleFactor(0.75)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
@@ -2172,6 +2188,8 @@ struct DisclaimerView: View {
                             Text("\(lang.t("disclaimer_close")) (v\(appVersion))")
                                 .font(.headline)
                                 .bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                                 .frame(maxWidth: .infinity)
                                 .padding(12)
                                 .background(Color.blue)
@@ -2198,6 +2216,8 @@ struct DisclaimerView: View {
                             Text(lang.t("disclaimer_accept"))
                                 .font(.headline)
                                 .bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                                 .frame(maxWidth: .infinity)
                                 .padding(12)
                                 .background(hasCheckedBox ? Color.green : Color.gray.opacity(0.4))
