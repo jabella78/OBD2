@@ -8,6 +8,17 @@ import UIKit
 typealias PlatformImage = UIImage
 #endif
 
+func getAppDeploymentBuild() -> String {
+    if let path = Bundle.main.path(forResource: "deployment_id", ofType: "txt"),
+       let text = try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines),
+       !text.isEmpty {
+        return text
+    }
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.3"
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    return "v\(version) (Build \(build))"
+}
+
 struct ContentView: View {
     @StateObject var bleManager = BLEManager()
     @StateObject var obd2Manager: OBD2Manager
@@ -15,14 +26,7 @@ struct ContentView: View {
     @ObservedObject var lang = LocalizationManager.shared
     
     var currentDeploymentBuild: String {
-        if let path = Bundle.main.path(forResource: "deployment_id", ofType: "txt"),
-           let text = try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines),
-           !text.isEmpty {
-            return text
-        }
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.2"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version) (Build \(build))"
+        return getAppDeploymentBuild()
     }
     
     @AppStorage("lastAcceptedDeploymentBuild") private var lastAcceptedDeploymentBuild: String = ""
@@ -38,44 +42,52 @@ struct ContentView: View {
         _obd2Manager = StateObject(wrappedValue: OBD2Manager(bleManager: ble))
     }
     
+    @AppStorage("selected_tab") private var selectedTab: Int = 0
+    
     var body: some View {
         ZStack {
-            TabView {
+            TabView(selection: $selectedTab) {
                 DashboardView(obd2Manager: obd2Manager)
                     .tabItem { 
                         Image(systemName: "gauge")
                         Text(lang.t("tab_dash"))
                     }
+                    .tag(0)
                 
                 DiagnosticsView(obd2Manager: obd2Manager, aiManager: aiManager)
                     .tabItem { 
                         Image(systemName: "wrench.and.screwdriver")
                         Text(lang.t("tab_dtc")) 
                     }
+                    .tag(1)
                     
                 TerminalView(obd2Manager: obd2Manager)
                     .tabItem { 
                         Image(systemName: "terminal")
                         Text(lang.t("tab_term")) 
                     }
+                    .tag(2)
                 
                 ConnectionView(bleManager: bleManager, obd2Manager: obd2Manager)
                     .tabItem { 
                         Image(systemName: "antenna.radiowaves.left.and.right")
                         Text(lang.t("tab_ble")) 
                     }
+                    .tag(3)
                     
                 ActuatorTestView(obd2Manager: obd2Manager)
                     .tabItem {
                         Image(systemName: "bolt.fill")
                         Text(lang.t("tab_actuators"))
                     }
+                    .tag(4)
                     
                 SettingsView(aiManager: aiManager)
                     .tabItem { 
                         Image(systemName: "gear")
                         Text(lang.t("tab_setup")) 
                     }
+                    .tag(5)
                 
                 InfoView(onShowDisclaimer: {
                     showingManualDisclaimer = true
@@ -84,6 +96,7 @@ struct ContentView: View {
                         Image(systemName: "info.circle.fill")
                         Text(lang.t("tab_info"))
                     }
+                    .tag(6)
             }
             .padding()
             #if os(macOS)
@@ -276,6 +289,36 @@ struct DashboardView: View {
     @ObservedObject var lang = LocalizationManager.shared
     @State private var showingCSVShareSheet: Bool = false
     
+    var recordCsvBtnText: String {
+        if obd2Manager.isRecording {
+            switch lang.currentLanguage {
+            case .english: return "Stop CSV"
+            case .italian: return "Stop CSV"
+            case .french: return "Arrêter CSV"
+            case .spanish: return "Detener CSV"
+            case .german: return "CSV Stoppen"
+            }
+        } else {
+            switch lang.currentLanguage {
+            case .english: return "Record CSV"
+            case .italian: return "Registra CSV"
+            case .french: return "Enregistrer CSV"
+            case .spanish: return "Grabar CSV"
+            case .german: return "CSV Aufnehmen"
+            }
+        }
+    }
+    
+    var exportCsvBtnText: String {
+        switch lang.currentLanguage {
+        case .english: return "Export CSV"
+        case .italian: return "Esporta CSV"
+        case .french: return "Exporter CSV"
+        case .spanish: return "Exportar CSV"
+        case .german: return "CSV Exportieren"
+        }
+    }
+    
     var logoImage: PlatformImage? {
         if let path = Bundle.main.path(forResource: "yadiag_logo", ofType: "png") {
             return PlatformImage(contentsOfFile: path)
@@ -335,7 +378,7 @@ struct DashboardView: View {
                             HStack(spacing: 8) {
                                 Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
                                     .font(.system(size: 14, weight: .bold))
-                                Text(obd2Manager.isPollingPaused ? "Avvia Live" : "Pausa Live")
+                                Text(obd2Manager.isPollingPaused ? lang.t("dash_live_resume") : lang.t("dash_live_pause"))
                                     .font(.system(size: 14, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.85)
@@ -360,7 +403,7 @@ struct DashboardView: View {
                                 Image(systemName: obd2Manager.isRecording ? "stop.fill" : "circle.fill")
                                     .font(.system(size: 11))
                                     .foregroundColor(obd2Manager.isRecording ? .white : .red)
-                                Text(obd2Manager.isRecording ? "Stop CSV" : "Registra CSV")
+                                Text(recordCsvBtnText)
                                     .font(.system(size: 14, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.85)
@@ -392,7 +435,7 @@ struct DashboardView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: "square.and.arrow.up")
                                         .font(.system(size: 13, weight: .bold))
-                                    Text("Esporta CSV")
+                                    Text(exportCsvBtnText)
                                         .font(.system(size: 13, weight: .bold))
                                         .lineLimit(1)
                                 }
@@ -414,12 +457,12 @@ struct DashboardView: View {
                                 .foregroundColor(obd2Manager.isDemoMode ? .purple : .secondary)
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Simulatore Banco Prova (Demo)")
+                                Text(lang.t("ble_bench_mode_title"))
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(obd2Manager.isDemoMode ? .purple : .primary)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.85)
-                                Text(obd2Manager.isDemoMode ? "Dati virtuali attivi (10 Hz)" : "Modalità banco dinamico")
+                                Text(obd2Manager.isDemoMode ? lang.t("ble_bench_mode_active") : lang.t("ble_bench_mode_idle"))
                                     .font(.system(size: 10))
                                     .foregroundColor(.secondary)
                             }
@@ -560,6 +603,86 @@ struct DiagnosticsView: View {
     @State private var showingPDFExportSuccess: Bool = false
     
     let absHeaders = ["7E3", "7B0", "7E2", "760"]
+    
+    var pdfBtnLabel: String {
+        switch lang.currentLanguage {
+        case .english: return "PDF Report"
+        case .italian: return "Certificato PDF"
+        case .french: return "Certificat PDF"
+        case .spanish: return "Certificado PDF"
+        case .german: return "PDF-Bericht"
+        }
+    }
+    
+    var serviceGuideBtnLabel: String {
+        switch lang.currentLanguage {
+        case .english: return "Service Guide"
+        case .italian: return "Guida Tagliando"
+        case .french: return "Guide Entretien"
+        case .spanish: return "Guía Mantenimiento"
+        case .german: return "Service-Anleitung"
+        }
+    }
+    
+    var pdfExportAlertTitle: String {
+        switch lang.currentLanguage {
+        case .english: return "PDF Certificate Generated"
+        case .italian: return "Certificato PDF Generato"
+        case .french: return "Certificat PDF Généré"
+        case .spanish: return "Certificado PDF Generado"
+        case .german: return "PDF-Zertifikat Erstellt"
+        }
+    }
+    
+    var pdfExportAlertDesc: String {
+        switch lang.currentLanguage {
+        case .english: return "The diagnostic inspection certificate PDF has been generated and opened in Preview."
+        case .italian: return "Il certificato diagnostico in formato PDF è stato generato e aperto in Anteprima per la visualizzazione o la stampa."
+        case .french: return "Le certificat d'inspection de diagnostic en format PDF a été généré et ouvert dans Aperçu."
+        case .spanish: return "El certificado de peritaje y diagnóstico en formato PDF ha sido generado y abierto en Vista Previa."
+        case .german: return "Das Inspektions- und Diagnosezertifikat als PDF wurde generiert und in der Vorschau geöffnet."
+        }
+    }
+    
+    var aiConsentTitle: String {
+        switch lang.currentLanguage {
+        case .english: return "Data Sharing with External AI Service"
+        case .italian: return "Condivisione Dati con Servizio AI Esterno"
+        case .french: return "Partage de Données avec Service d'IA Externe"
+        case .spanish: return "Compartir Datos con Servicio de IA Externo"
+        case .german: return "Datenweitergabe an externen KI-Dienst"
+        }
+    }
+    
+    var aiConsentConfirm: String {
+        switch lang.currentLanguage {
+        case .english: return "Consent and Send"
+        case .italian: return "Acconsenti e Invia"
+        case .french: return "Accepter et Envoyer"
+        case .spanish: return "Aceptar y Enviar"
+        case .german: return "Zustimmen und Senden"
+        }
+    }
+    
+    var aiConsentCancel: String {
+        switch lang.currentLanguage {
+        case .english: return "Cancel"
+        case .italian: return "Annulla"
+        case .french: return "Annuler"
+        case .spanish: return "Cancelar"
+        case .german: return "Abbrechen"
+        }
+    }
+    
+    var aiConsentBody: String {
+        switch lang.currentLanguage {
+        case .english: return "Technical diagnostic data (fault codes or session telemetry) will be transmitted to the \(aiManager.selectedProvider.rawValue) cloud endpoint to generate an expert mechanical assessment.\n\nNo personal data, vehicle registration or license plate details are collected or transmitted."
+        case .italian: return "I dati tecnici diagnostici (codici guasto o telemetria della sessione) verranno trasmessi all'endpoint cloud di \(aiManager.selectedProvider.rawValue) per generare la valutazione meccanica specialistica.\n\nNessun dato personale o di identificazione veicolo/targa viene trasmesso."
+        case .french: return "Les données techniques de diagnostic et les codes défaut seront transmis à l'endpoint de \(aiManager.selectedProvider.rawValue) pour analyse experte.\n\nAucune donnée personnelle ou d'immatriculation n'est transmise."
+        case .spanish: return "Los datos técnicos de diagnóstico y códigos de avería se enviarán al servicio de \(aiManager.selectedProvider.rawValue) para generar el peritaje mecánico.\n\nNo se recoge ni comparte ningún dato personal ni matrícula."
+        case .german: return "Diagnosetechnische Daten (Fehlercodes oder Telemetrie) werden an den Cloud-Endpunkt von \(aiManager.selectedProvider.rawValue) übermittelt, um eine mechanische Bewertung zu erstellen.\n\nEs werden keinerlei personenbezogene Daten oder Kennzeichen erfasst."
+        }
+    }
     
     var activeCodesList: [String] {
         return obd2Manager.selectedECU == .engine ? obd2Manager.dtcCodes : obd2Manager.absDtcCodes
@@ -762,7 +885,7 @@ struct DiagnosticsView: View {
                             Image(systemName: "doc.text.fill")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(.cyan)
-                            Text("Certificato PDF")
+                            Text(pdfBtnLabel)
                                 .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.75)
@@ -782,7 +905,7 @@ struct DiagnosticsView: View {
                             Image(systemName: "wrench.and.screwdriver.fill")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(.orange)
-                            Text("Guida Tagliando")
+                            Text(serviceGuideBtnLabel)
                                 .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.75)
@@ -862,16 +985,16 @@ struct DiagnosticsView: View {
             }
             .padding(.bottom, 20)
         }
-        .alert("Condivisione Dati con Servizio AI Esterno", isPresented: $showingAIConsentAlert) {
-            Button("Acconsenti e Invia", role: .none) {
+        .alert(aiConsentTitle, isPresented: $showingAIConsentAlert) {
+            Button(aiConsentConfirm, role: .none) {
                 pendingAIAction?()
                 pendingAIAction = nil
             }
-            Button("Annulla", role: .cancel) {
+            Button(aiConsentCancel, role: .cancel) {
                 pendingAIAction = nil
             }
         } message: {
-            Text("I dati tecnici diagnostici (codici guasto o telemetria della sessione) verranno trasmessi all'endpoint cloud di \(aiManager.selectedProvider.rawValue) per generare la valutazione meccanica specialistica.\n\nNessun dato personale o di identificazione veicolo/targa viene trasmesso.")
+            Text(aiConsentBody)
         }
         .sheet(isPresented: $showingServiceGuide) {
             ServiceResetGuideView()
@@ -883,10 +1006,10 @@ struct DiagnosticsView: View {
             }
         }
         #endif
-        .alert("Certificato PDF Generato", isPresented: $showingPDFExportSuccess) {
+        .alert(pdfExportAlertTitle, isPresented: $showingPDFExportSuccess) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Il certificato diagnostico in formato PDF è stato generato e aperto in Anteprima per la visualizzazione o la stampa.")
+            Text(pdfExportAlertDesc)
         }
     }
 }
@@ -940,7 +1063,7 @@ struct ConnectionView: View {
                                 .foregroundColor(.purple)
                                 .font(.title2)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("SIMULATORE BANCO PROVA ATTIVO")
+                                Text(lang.t("ble_sim_active_banner"))
                                     .font(.caption2)
                                     .bold()
                                     .foregroundColor(.purple)
@@ -948,7 +1071,7 @@ struct ConnectionView: View {
                                     .font(.headline)
                                     .bold()
                                     .foregroundColor(.primary)
-                                Text("Protocollo CAN Bus 500k ISO 15765-4 simulato (Nessun Bluetooth richiesto)")
+                                Text(lang.t("ble_simulated_protocol"))
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
@@ -1012,7 +1135,7 @@ struct ConnectionView: View {
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: "xmark.circle.fill")
-                            Text(bleManager.isVirtualSimulator ? "Disconnetti Simulatore" : lang.t("ble_disconnect"))
+                            Text(bleManager.isVirtualSimulator ? lang.t("ble_simulator_disconnect") : lang.t("ble_disconnect"))
                                 .font(.system(size: 14, weight: .semibold))
                         }
                         .frame(maxWidth: .infinity)
@@ -1033,10 +1156,10 @@ struct ConnectionView: View {
                             .font(.system(size: 20))
                             .foregroundColor(.purple)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Simulatore OBD2 Virtuale (Offline)")
+                            Text(lang.t("ble_simulator_card_title"))
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.purple)
-                            Text("Testa tutte le funzionalità dell'app senza moto né adattatore fisico.")
+                            Text(lang.t("ble_simulator_card_desc"))
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -1048,7 +1171,7 @@ struct ConnectionView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 13, weight: .bold))
-                            Text("Connetti Simulatore Virtuale")
+                            Text(lang.t("ble_simulator_connect"))
                                 .font(.system(size: 13, weight: .bold))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.85)
@@ -1098,10 +1221,10 @@ struct ConnectionView: View {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 32))
                             .foregroundColor(.secondary)
-                        Text("Nessun adattatore OBD2 rilevato nelle vicinanze.")
+                        Text(lang.t("ble_no_devices"))
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Text("Inserisci l'adattatore nella presa diagnostica della moto con il quadro acceso (Key ON).")
+                        Text(lang.t("ble_insert_hint"))
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -1109,7 +1232,7 @@ struct ConnectionView: View {
                     .padding(30)
                 } else {
                     List(bleManager.discoveredPeripherals, id: \.identifier) { peripheral in
-                        let name = peripheral.name ?? "Dispositivo OBD"
+                        let name = peripheral.name ?? lang.t("ble_device_default")
                         let isCert = BLEManager.isCertifiedAdapter(name: name)
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
@@ -1117,7 +1240,7 @@ struct ConnectionView: View {
                                     .font(.headline)
                                 HStack(spacing: 4) {
                                     Image(systemName: isCert ? "checkmark.seal.fill" : "exclamationmark.circle.fill")
-                                    Text(isCert ? "Certificato e Raccomandato" : "Compatibilità generica ELM327")
+                                    Text(isCert ? lang.t("ble_certified_badge") : lang.t("ble_generic_badge"))
                                 }
                                 .font(.caption2)
                                 .foregroundColor(isCert ? .green : .orange)
@@ -1126,7 +1249,7 @@ struct ConnectionView: View {
                             Button(action: {
                                 bleManager.connect(peripheral: peripheral)
                             }) {
-                                Text("Connetti")
+                                Text(lang.t("ble_connect"))
                                     .font(.system(size: 13, weight: .bold))
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 8)
@@ -1169,7 +1292,7 @@ struct TerminalView: View {
                         HStack(spacing: 5) {
                             Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
                                 .font(.system(size: 12, weight: .bold))
-                            Text(obd2Manager.isPollingPaused ? "Live" : "Pausa")
+                            Text(obd2Manager.isPollingPaused ? "Live" : (lang.currentLanguage == .italian ? "Pausa" : "Pause"))
                                 .font(.system(size: 12, weight: .bold))
                                 .lineLimit(1)
                         }
@@ -1256,17 +1379,26 @@ struct TerminalView: View {
             .padding(.horizontal)
             .padding(.bottom, 12)
         }
-        .alert("Comando Diagnostico Critico", isPresented: $showingDangerousCommandAlert) {
-            Button("Invia Comunque (Modalità Esperto)", role: .destructive) {
+        .alert(
+            lang.currentLanguage == .english ? "Critical Diagnostic Command" : (lang.currentLanguage == .french ? "Commande Diagnostique Critique" : (lang.currentLanguage == .spanish ? "Comando Diagnóstico Crítico" : (lang.currentLanguage == .german ? "Kritischer Diagnosebefehl" : "Comando Diagnostico Critico"))),
+            isPresented: $showingDangerousCommandAlert
+        ) {
+            Button(
+                lang.currentLanguage == .english ? "Send Anyway (Expert Mode)" : (lang.currentLanguage == .french ? "Envoyer quand même (Mode Expert)" : (lang.currentLanguage == .spanish ? "Enviar de todos modos (Modo Experto)" : (lang.currentLanguage == .german ? "Trotzdem senden (Expertenmodus)" : "Invia Comunque (Modalità Esperto)"))),
+                role: .destructive
+            ) {
                 obd2Manager.sendCustomCommand(pendingCommand)
                 commandInput = ""
                 pendingCommand = ""
             }
-            Button("Annulla", role: .cancel) {
+            Button(
+                lang.currentLanguage == .english ? "Cancel" : (lang.currentLanguage == .french ? "Annuler" : (lang.currentLanguage == .spanish ? "Cancelar" : (lang.currentLanguage == .german ? "Abbrechen" : "Annulla"))),
+                role: .cancel
+            ) {
                 pendingCommand = ""
             }
         } message: {
-            Text("Attenzione: il comando inserito interagisce con funzioni critiche (\(dangerousCommandWarning)). L'invio di sequenze errate potrebbe provocare errori permanenti o anomalie di funzionamento della centralina.")
+            Text("\(lang.t("term_danger_alert"))\n\n(\(dangerousCommandWarning))")
         }
     }
 }
@@ -1285,7 +1417,7 @@ struct SettingsView: View {
                         Image(systemName: "crown.fill")
                             .foregroundColor(.yellow)
                             .font(.title3)
-                        Text("Edizione YaDiag Pro: ATTIVA")
+                        Text(lang.currentLanguage == .english ? "YaDiag Pro Edition: ACTIVE" : (lang.currentLanguage == .french ? "Édition YaDiag Pro : ACTIVE" : (lang.currentLanguage == .spanish ? "Edición YaDiag Pro: ACTIVA" : (lang.currentLanguage == .german ? "YaDiag Pro Edition: AKTIV" : "Edizione YaDiag Pro: ATTIVA"))))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -1299,7 +1431,7 @@ struct SettingsView: View {
                             .cornerRadius(6)
                     }
                     
-                    Text("Tutte le funzioni professionali (Cancellazione Guasti DTC, Test Idraulico Pompa ABS, Reset Corpi Farfallati ISC, Reset Lambda O2 e Diagnostica AI) sono attive su questa applicazione.")
+                    Text(lang.t("setup_pro_features_active"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -1769,7 +1901,7 @@ struct InfoView: View {
     }
     
     var infoSubtitle: String {
-        return "\(AppEdition.appName) — Version 1.0.2 (Build 2026)"
+        return "\(AppEdition.appName) — \(getAppDeploymentBuild())"
     }
     
     var canOverviewTitle: String {
@@ -1952,6 +2084,51 @@ struct InfoView: View {
         }
     }
     
+    var transparencyTitle: String {
+        switch lang.currentLanguage {
+        case .english: return "Transparency & Compatibility Notice"
+        case .italian: return "Nota di Trasparenza & Compatibilità"
+        case .french: return "Note de Transparence & Compatibilité"
+        case .spanish: return "Nota de Transparencia y Compatibilidad"
+        case .german: return "Transparenz- & Kompatibilitätshinweis"
+        }
+    }
+    
+    var transparencyBody: String {
+        switch lang.currentLanguage {
+        case .english:
+            return "YaDiag Pro is an independent diagnostic software. Standard DTC fault diagnostics (Mode 03/04 for Engine and KWP 0x18 for ABS) and live telemetry operate on standard CAN-bus architecture. Advanced adaptive resets (ISC Code 67 and O2 sensor Code 87) are certified on the CP3 Euro 4 platform; on other models, access to specific internal Denso registers depends on the installed ECU firmware release. Service reminder resets (oil / wrench indicators) are performed directly on the motorcycle meter cluster via the official dashboard procedures documented in the guide."
+        case .italian:
+            return "YaDiag Pro è un software diagnostico indipendente. Le funzionalità diagnostiche DTC (Mode 03/04 per Motore ed errore KWP 0x18 per ABS) e telemetria operano su standard CAN-bus. I reset adattivi (ISC Cod. 67 e Sonda Lambda Cod. 87) sono certificati sulla piattaforma CP3 Euro 4; per gli altri modelli l'accesso a specifici registri interni dipende dal firmware centralina Denso installato. Le procedure di azzeramento spia tagliando (chiave/olio) sono manuali da cruscotto e consultabili nella guida dedicata."
+        case .french:
+            return "YaDiag Pro est un logiciel de diagnostic indépendant. Le diagnostic standard DTC et la télémétrie fonctionnent selon les normes CAN-bus. Les réinitialisations adaptatives (ISC Code 67 et sonde Lambda Code 87) sont certifiées sur plateforme CP3 Euro 4. La réinitialisation des rappels d'entretien (voyant vidange/clé) s'effectue manuellement au tableau de bord selon les procédures documentées."
+        case .spanish:
+            return "YaDiag Pro es una herramienta de diagnóstico independiente. La diagnosis DTC y la telemetría operan sobre estándares CAN-bus. Los reinicios adaptativos (ISC Cód. 67 y Lambda Cód. 87) están certificados en la plataforma CP3 Euro 4. El reinicio de la luz de mantenimiento (aceite / llave) se realiza manualmente desde el cuadro de instrumentos mediante los pasos indicados en la guía."
+        case .german:
+            return "YaDiag Pro ist eine unabhängige Diagnosesoftware. Die DTC-Diagnose und Telemetrie arbeiten nach CAN-Bus-Standards. Adaptive Resets (ISC Code 67 und Lambdasonde Code 87) sind auf der CP3 Euro 4 Plattform zertifiziert. Das Zurücksetzen der Wartungsanzeige erfolgt manuell über das Cockpit gemäß Anleitung."
+        }
+    }
+    
+    var serviceGuideQuickBtnTitle: String {
+        switch lang.currentLanguage {
+        case .english: return "Official Service Reset Guide (Dashboard)"
+        case .italian: return "Guida Ufficiale Reset Tagliando (da cruscotto)"
+        case .french: return "Guide Officiel Reset Entretien (Compteur)"
+        case .spanish: return "Guía Oficial Reinicio Servicio (Tablero)"
+        case .german: return "Offizielle Service-Reset-Anleitung (Cockpit)"
+        }
+    }
+    
+    var serviceGuideQuickBtnSubtitle: String {
+        switch lang.currentLanguage {
+        case .english: return "Step-by-step manual procedures to reset Oil Trip, wrench icon and V-Belt"
+        case .italian: return "Procedure manuali per azzerare Oil Trip, spia chiave e V-Belt per tutti i modelli"
+        case .french: return "Procédures manuelles pour réinitialiser Oil Trip, voyant clé et V-Belt"
+        case .spanish: return "Procedimientos manuales para reiniciar Oil Trip, testigo de llave y V-Belt"
+        case .german: return "Manuelle Tastenfolgen zum Zurücksetzen von Oil Trip, Schraubenschlüssel und V-Belt"
+        }
+    }
+    
     var disclaimerSectionDesc: String {
         switch lang.currentLanguage {
         case .english:
@@ -2009,12 +2186,12 @@ struct InfoView: View {
                     HStack {
                         Image(systemName: "shield.lefthalf.filled")
                             .foregroundColor(.orange)
-                        Text("Nota di Trasparenza & Compatibilità")
+                        Text(transparencyTitle)
                             .font(.caption)
                             .bold()
                             .foregroundColor(.orange)
                     }
-                    Text("YaDiag Pro è un software diagnostico indipendente. Le funzionalità diagnostiche DTC (Mode 03/04 per Motore ed errore KWP 0x18 per ABS) e telemetria operano su standard CAN-bus. I reset adattivi (ISC Cod. 67 e Sonda Lambda Cod. 87) sono certificati sulla piattaforma CP3 Euro 4; per gli altri modelli l'accesso a specifici registri interni dipende dal firmware centralina Denso installato. Le procedure di azzeramento spia tagliando (chiave/olio) sono manuali da cruscotto e consultabili nella guida dedicata.")
+                    Text(transparencyBody)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -2030,9 +2207,9 @@ struct InfoView: View {
                         Image(systemName: "wrench.and.screwdriver.fill")
                             .foregroundColor(.orange)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Guida Ufficiale Reset Tagliando (da cruscotto)")
+                            Text(serviceGuideQuickBtnTitle)
                                 .font(.system(size: 13, weight: .bold))
-                            Text("Procedure manuali per azzerare Oil Trip, spia chiave e V-Belt per tutti i modelli")
+                            Text(serviceGuideQuickBtnSubtitle)
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -2084,7 +2261,12 @@ struct InfoView: View {
                                         .font(.caption)
                                         .bold()
                                     Spacer()
-                                    Text(isCertified ? "🟢 Certificato 100%" : (isKwpEuro4 ? "🟡 Compatibile KWP" : "🔵 Standard OBD2"))
+                                    
+                                    let certifiedBadge = lang.currentLanguage == .english ? "🟢 Certified 100%" : (lang.currentLanguage == .french ? "🟢 Certifié 100%" : (lang.currentLanguage == .spanish ? "🟢 Certificado 100%" : (lang.currentLanguage == .german ? "🟢 100% Zertifiziert" : "🟢 Certificato 100%")))
+                                    let kwpBadge = lang.currentLanguage == .english ? "🟡 KWP Compatible" : (lang.currentLanguage == .french ? "🟡 Compatible KWP" : (lang.currentLanguage == .spanish ? "🟡 Compatible KWP" : (lang.currentLanguage == .german ? "🟡 KWP-kompatibel" : "🟡 Compatibile KWP")))
+                                    let obd2Badge = lang.currentLanguage == .english ? "🔵 Standard OBD2" : (lang.currentLanguage == .french ? "🔵 Standard OBD2" : (lang.currentLanguage == .spanish ? "🔵 Estándar OBD2" : (lang.currentLanguage == .german ? "🔵 Standard-OBD2" : "🔵 Standard OBD2")))
+                                    
+                                    Text(isCertified ? certifiedBadge : (isKwpEuro4 ? kwpBadge : obd2Badge))
                                         .font(.system(size: 9, weight: .bold))
                                         .foregroundColor(isCertified ? .green : (isKwpEuro4 ? .cyan : .blue))
                                 }

@@ -19,8 +19,8 @@ let package = Package(
             targets: ["AppModule"],
             bundleIdentifier: "com.jabella78.yadiag",
             teamIdentifier: "D4D9CCU3X7",
-            displayVersion: "1.0.2",
-            bundleVersion: "261103.092624",
+            displayVersion: "1.0.3",
+            bundleVersion: "261103.210711",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
             supportedDeviceFamilies: [

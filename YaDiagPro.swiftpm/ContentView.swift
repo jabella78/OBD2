@@ -8,6 +8,17 @@ import UIKit
 typealias PlatformImage = UIImage
 #endif
 
+func getAppDeploymentBuild() -> String {
+    if let path = Bundle.main.path(forResource: "deployment_id", ofType: "txt"),
+       let text = try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines),
+       !text.isEmpty {
+        return text
+    }
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.3"
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    return "v\(version) (Build \(build))"
+}
+
 struct ContentView: View {
     @StateObject var bleManager = BLEManager()
     @StateObject var obd2Manager: OBD2Manager
@@ -15,14 +26,7 @@ struct ContentView: View {
     @ObservedObject var lang = LocalizationManager.shared
     
     var currentDeploymentBuild: String {
-        if let path = Bundle.main.path(forResource: "deployment_id", ofType: "txt"),
-           let text = try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines),
-           !text.isEmpty {
-            return text
-        }
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.2"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version) (Build \(build))"
+        return getAppDeploymentBuild()
     }
     
     @AppStorage("lastAcceptedDeploymentBuild") private var lastAcceptedDeploymentBuild: String = ""
@@ -1897,7 +1901,7 @@ struct InfoView: View {
     }
     
     var infoSubtitle: String {
-        return "\(AppEdition.appName) — Version 1.0.2 (Build 2026)"
+        return "\(AppEdition.appName) — \(getAppDeploymentBuild())"
     }
     
     var canOverviewTitle: String {

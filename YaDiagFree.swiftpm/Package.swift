@@ -20,7 +20,7 @@ let package = Package(
             bundleIdentifier: "com.jabella78.yadiag.free",
             teamIdentifier: "D4D9CCU3X7",
             displayVersion: "1.0.3",
-            bundleVersion: "261103.210119",
+            bundleVersion: "261103.210711",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
             supportedDeviceFamilies: [

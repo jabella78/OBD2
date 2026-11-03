@@ -3,25 +3,42 @@ set -e
 cd /Users/jabella78/Documents/OBD2
 
 TARGET=${1:-pro}
+BUMP_ARG=${2:-}
 
+# Se richiesto esplicitamente un incremento di versione (es. ./build.sh all patch / minor / major / 1.0.4)
+if [ -n "$BUMP_ARG" ]; then
+    ./bump_version.sh "$BUMP_ARG"
+fi
+
+VERSION=$(cat VERSION 2>/dev/null || echo "1.0.3")
+VERSION=$(echo "$VERSION" | tr -d '[:space:]')
 BUILD_NUM=$(date +'%y%m%d.%H%M%S')
-DEPLOY_ID="v1.0.2 (Build ${BUILD_NUM})"
+DEPLOY_ID="v${VERSION} (Build ${BUILD_NUM})"
 echo "🚀 Nuovo Deployment: $DEPLOY_ID - iOS Target: $TARGET"
 
-mkdir -p YaDiagPro.swiftpm/Resources YaDiagFree.swiftpm/Resources YaDiag.app/Contents/Resources
+mkdir -p YaDiagPro.swiftpm/Resources YaDiagFree.swiftpm/Resources YamahaOBD2.swiftpm/Resources YaDiag.app/Contents/Resources
 echo "$DEPLOY_ID" > YaDiagPro.swiftpm/Resources/deployment_id.txt
 echo "$DEPLOY_ID" > YaDiagFree.swiftpm/Resources/deployment_id.txt
+echo "$DEPLOY_ID" > YamahaOBD2.swiftpm/Resources/deployment_id.txt
 echo "$DEPLOY_ID" > YaDiag.app/Contents/Resources/deployment_id.txt
 
 # Aggiorna Info.plist di macOS
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUILD_NUM}" YaDiag.app/Contents/Info.plist 2>/dev/null || \
 /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${BUILD_NUM}" YaDiag.app/Contents/Info.plist 2>/dev/null || true
-/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.2" YaDiag.app/Contents/Info.plist 2>/dev/null || \
-/usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 1.0.2" YaDiag.app/Contents/Info.plist 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" YaDiag.app/Contents/Info.plist 2>/dev/null || \
+/usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${VERSION}" YaDiag.app/Contents/Info.plist 2>/dev/null || true
 
-# Aggiorna Package.swift per iOS (Free e Pro)
+# Aggiorna Package.swift per iOS (displayVersion e bundleVersion per Xcode / App Store Connect)
+sed -i '' "s/displayVersion: .*/displayVersion: \"${VERSION}\",/" YaDiagPro.swiftpm/Package.swift
 sed -i '' "s/bundleVersion: .*/bundleVersion: \"${BUILD_NUM}\",/" YaDiagPro.swiftpm/Package.swift
+
+sed -i '' "s/displayVersion: .*/displayVersion: \"${VERSION}\",/" YaDiagFree.swiftpm/Package.swift
 sed -i '' "s/bundleVersion: .*/bundleVersion: \"${BUILD_NUM}\",/" YaDiagFree.swiftpm/Package.swift
+
+if [ -f YamahaOBD2.swiftpm/Package.swift ]; then
+    sed -i '' "s/displayVersion: .*/displayVersion: \"${VERSION}\",/" YamahaOBD2.swiftpm/Package.swift
+    sed -i '' "s/bundleVersion: .*/bundleVersion: \"${BUILD_NUM}\",/" YamahaOBD2.swiftpm/Package.swift
+fi
 
 echo "=== 1/3 Sincronizzazione sorgenti macOS (YaDiag unificata completa) ==="
 rm -rf src/*
