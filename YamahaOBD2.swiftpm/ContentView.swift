@@ -324,47 +324,48 @@ struct DashboardView: View {
                 .padding(.top, 10)
                 
                 // Control Center: Card Moderna Compatta per Telemetria, Rec e Demo
-                VStack(spacing: 10) {
-                    HStack(spacing: 8) {
+                VStack(spacing: 12) {
+                    // Riga 1: I due comandi primari
+                    HStack(spacing: 10) {
                         // 1. Tasto Telemetria Live (Play/Pausa)
                         Button(action: {
                             obd2Manager.toggleTelemetry()
                         }) {
-                            HStack(spacing: 6) {
+                            HStack(spacing: 8) {
                                 Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
-                                    .font(.subheadline)
+                                    .font(.system(size: 14, weight: .bold))
                                 Text(obd2Manager.isPollingPaused ? "Avvia Live" : "Pausa Live")
-                                    .font(.subheadline)
-                                    .bold()
+                                    .font(.system(size: 14, weight: .bold))
                                     .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 12)
                             .background(
                                 obd2Manager.isPollingPaused
                                     ? LinearGradient(colors: [Color.green.opacity(0.85), Color.green], startPoint: .top, endPoint: .bottom)
                                     : LinearGradient(colors: [Color.orange.opacity(0.85), Color.orange], startPoint: .top, endPoint: .bottom)
                             )
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .cornerRadius(10)
-                            .shadow(color: (obd2Manager.isPollingPaused ? Color.green : Color.orange).opacity(0.3), radius: 4, x: 0, y: 2)
+                            .shadow(color: (obd2Manager.isPollingPaused ? Color.green : Color.orange).opacity(0.3), radius: 3, x: 0, y: 2)
                         }
                         
                         // 2. Tasto Registrazione CSV Telemetria
                         Button(action: {
                             obd2Manager.toggleRecording()
                         }) {
-                            HStack(spacing: 6) {
+                            HStack(spacing: 8) {
                                 Image(systemName: obd2Manager.isRecording ? "stop.fill" : "circle.fill")
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 11))
                                     .foregroundColor(obd2Manager.isRecording ? .white : .red)
-                                Text(obd2Manager.isRecording ? "Stop CSV" : "Registra")
-                                    .font(.subheadline)
-                                    .bold()
+                                Text(obd2Manager.isRecording ? "Stop CSV" : "Registra CSV")
+                                    .font(.system(size: 14, weight: .bold))
                                     .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 12)
                             .background(
                                 obd2Manager.isRecording
                                     ? Color.red
@@ -377,69 +378,47 @@ struct DashboardView: View {
                                     .stroke(obd2Manager.isRecording ? Color.red : Color.secondary.opacity(0.3), lineWidth: 1)
                             )
                         }
-                        
-                        // 3. Tasto Demo Mode (Simulatore)
-                        Button(action: {
-                            obd2Manager.toggleDemoMode()
-                        }) {
-                            HStack(spacing: 5) {
-                                Image(systemName: obd2Manager.isDemoMode ? "sparkles" : "play.laptopcomputer")
-                                    .font(.subheadline)
-                                Text(obd2Manager.isDemoMode ? "Demo ON" : "Demo")
-                                    .font(.subheadline)
-                                    .bold()
-                                    .lineLimit(1)
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .background(
-                                obd2Manager.isDemoMode
-                                    ? LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                    : LinearGradient(colors: [Color.secondary.opacity(0.18), Color.secondary.opacity(0.18)], startPoint: .top, endPoint: .bottom)
-                            )
-                            .foregroundColor(obd2Manager.isDemoMode ? .white : .secondary)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(obd2Manager.isDemoMode ? Color.purple.opacity(0.6) : Color.secondary.opacity(0.3), lineWidth: 1)
-                            )
-                            .shadow(color: obd2Manager.isDemoMode ? Color.purple.opacity(0.4) : Color.clear, radius: 4, x: 0, y: 2)
-                        }
                     }
                     
-                    // Barra di Stato Live Elegante
+                    // Riga 2: Card dedicata al Simulatore Banco Prova (Demo) con Switch Toggle
                     HStack {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(obd2Manager.isDemoMode ? Color.purple : (obd2Manager.isPollingPaused ? Color.gray : Color.green))
-                                .frame(width: 8, height: 8)
-                            Text(
-                                obd2Manager.isDemoMode
-                                    ? "Simulatore Banco Prova Attivo"
-                                    : (obd2Manager.isPollingPaused ? lang.t("telemetry_paused_notice") : lang.t("telemetry_active_notice"))
-                            )
-                            .font(.caption2)
-                            .bold()
-                            .foregroundColor(obd2Manager.isDemoMode ? .purple : (obd2Manager.isPollingPaused ? .secondary : .green))
+                        HStack(spacing: 8) {
+                            Image(systemName: obd2Manager.isDemoMode ? "play.laptopcomputer" : "laptopcomputer")
+                                .font(.system(size: 16))
+                                .foregroundColor(obd2Manager.isDemoMode ? .purple : .secondary)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Simulatore Banco Prova (Demo)")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundColor(obd2Manager.isDemoMode ? .purple : .primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
+                                Text(obd2Manager.isDemoMode ? "Dati virtuali attivi (10 Hz)" : "Modalità banco dinamico")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                         
                         Spacer()
                         
-                        if obd2Manager.isRecording {
-                            HStack(spacing: 4) {
-                                Image(systemName: "circle.fill")
-                                    .font(.system(size: 6))
-                                    .foregroundColor(.red)
-                                Text("REC CSV")
-                                    .font(.system(size: 10, weight: .black, design: .monospaced))
-                                    .foregroundColor(.red)
-                            }
-                        }
+                        Toggle("", isOn: Binding(
+                            get: { obd2Manager.isDemoMode },
+                            set: { _ in obd2Manager.toggleDemoMode() }
+                        ))
+                        .labelsHidden()
+                        .toggleStyle(SwitchToggleStyle(tint: .purple))
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(obd2Manager.isDemoMode ? Color.purple.opacity(0.12) : Color.secondary.opacity(0.08))
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(obd2Manager.isDemoMode ? Color.purple.opacity(0.4) : Color.secondary.opacity(0.2), lineWidth: 1)
+                    )
                 }
                 .padding(10)
-                .background(Color.secondary.opacity(0.08))
+                .background(Color.secondary.opacity(0.06))
                 .cornerRadius(14)
                 .padding(.horizontal, 16)
                 
@@ -600,22 +579,27 @@ struct DiagnosticsView: View {
                                 manualABSCodeInput = ""
                             }) {
                                 Text(lang.currentLanguage == .english ? "Search" : (lang.currentLanguage == .french ? "Chercher" : (lang.currentLanguage == .spanish ? "Buscar" : (lang.currentLanguage == .german ? "Suchen" : "Cerca"))))
-                                    .font(.subheadline)
-                                    .bold()
+                                    .font(.system(size: 13, weight: .bold))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 8)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.blue)
                             
                             Button(action: { obd2Manager.scanABSAddresses() }) {
-                                HStack(spacing: 4) {
+                                HStack(spacing: 5) {
                                     Image(systemName: "antenna.radiowaves.left.and.right")
                                     Text("Auto-Scan")
                                 }
-                                .font(.subheadline)
-                                .bold()
+                                .font(.system(size: 13, weight: .bold))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.orange.opacity(0.18))
+                                .foregroundColor(.orange)
+                                .cornerRadius(8)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.orange.opacity(0.4), lineWidth: 1))
                             }
-                            .buttonStyle(.bordered)
-                            .tint(.orange)
                         }
                     }
                     .padding(12)
@@ -624,51 +608,68 @@ struct DiagnosticsView: View {
                     .padding(.horizontal)
                 }
                 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                // Card Azioni Diagnostiche DTC & AI con Design Squadrato Moderno
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    // 1. Scansiona Errori
                     Button(action: { obd2Manager.readErrors() }) {
-                        VStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass")
-                                .font(.title3)
+                                .font(.system(size: 15, weight: .bold))
                             Text(obd2Manager.selectedECU == .engine ? lang.t("scan_dtc_btn") : "ABS • " + lang.t("scan_dtc_btn"))
-                                .font(.subheadline)
-                                .bold()
+                                .font(.system(size: 13, weight: .bold))
+                                .lineLimit(1)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(
+                            obd2Manager.selectedECU == .engine
+                                ? LinearGradient(colors: [Color.blue.opacity(0.85), Color.blue], startPoint: .top, endPoint: .bottom)
+                                : LinearGradient(colors: [Color.orange.opacity(0.85), Color.orange], startPoint: .top, endPoint: .bottom)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .shadow(color: (obd2Manager.selectedECU == .engine ? Color.blue : Color.orange).opacity(0.25), radius: 4, x: 0, y: 2)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(obd2Manager.selectedECU == .engine ? Color.blue.opacity(0.85) : Color.orange.opacity(0.85))
                     
+                    // 2. Cancella Errori
                     Button(action: { obd2Manager.clearErrors() }) {
-                        VStack(spacing: 6) {
-                            Image(systemName: "trash")
-                                .font(.title3)
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 14))
                             Text(obd2Manager.selectedECU == .engine ? lang.t("clear_dtc_btn") : "ABS • " + lang.t("clear_dtc_btn"))
-                                .font(.subheadline)
-                                .bold()
+                                .font(.system(size: 13, weight: .bold))
+                                .lineLimit(1)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(Color.red.opacity(0.15))
+                        .foregroundColor(.red)
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.red.opacity(0.4), lineWidth: 1))
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.red.opacity(0.85))
                     
+                    // 3. Valuta con AI
                     Button(action: {
                         pendingAIAction = {
                             aiManager.evaluateFaultCodes(activeCodesList)
                         }
                         showingAIConsentAlert = true
                     }) {
-                        VStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             Image(systemName: "sparkles")
-                                .font(.title3)
+                                .font(.system(size: 14, weight: .bold))
                             Text(lang.t("ai_eval_btn"))
-                                .font(.subheadline)
-                                .bold()
+                                .font(.system(size: 13, weight: .bold))
+                                .lineLimit(1)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(
+                            LinearGradient(colors: [Color.purple.opacity(0.9), Color.indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .shadow(color: Color.purple.opacity(0.3), radius: 4, x: 0, y: 2)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.purple.opacity(0.85))
                     
+                    // 4. Analisi Corsa Telemetria
                     Button(action: {
                         if let path = obd2Manager.currentTelemetryFilePath, let data = try? String(contentsOf: path, encoding: .utf8) {
                             pendingAIAction = {
@@ -679,18 +680,20 @@ struct DiagnosticsView: View {
                             aiManager.evaluationResult = lang.currentLanguage == .english ? "No telemetry data found. Start recording in Dashboard." : (lang.currentLanguage == .french ? "Aucune donnée de télémétrie. Démarrez l'enregistrement." : (lang.currentLanguage == .spanish ? "Sin datos de telemetría. Inicia la grabación en el Tablero." : (lang.currentLanguage == .german ? "Keine Telemetriedaten gefunden. Aufnahme im Cockpit starten." : "Nessun dato di telemetria trovato. Avvia la registrazione nel Cruscotto.")))
                         }
                     }) {
-                        VStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             Image(systemName: "chart.xyaxis.line")
-                                .font(.title3)
+                                .font(.system(size: 14, weight: .bold))
                             let telemTitle = lang.currentLanguage == .english ? "Telemetry (AI)" : (lang.currentLanguage == .french ? "Télémétrie (IA)" : (lang.currentLanguage == .spanish ? "Telemetría (IA)" : (lang.currentLanguage == .german ? "Telemetrie (KI)" : "Analisi Corsa (AI)")))
                             Text(telemTitle)
-                                .font(.subheadline)
-                                .bold()
+                                .font(.system(size: 13, weight: .bold))
+                                .lineLimit(1)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(Color.secondary.opacity(0.18))
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.indigo.opacity(0.85))
                 }
                 .padding(.horizontal)
                 
@@ -839,39 +842,61 @@ struct ConnectionView: View {
                     Button(action: {
                         obd2Manager.startInitialization()
                     }) {
-                        HStack {
+                        HStack(spacing: 8) {
                             Image(systemName: "bolt.badge.checkmark.fill")
+                                .font(.system(size: 15, weight: .bold))
                             Text("CAN Bus 500k Init")
-                                .bold()
+                                .font(.system(size: 15, weight: .bold))
                         }
-                        .padding()
+                        .padding(.vertical, 14)
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
+                        .background(
+                            LinearGradient(colors: [Color.blue.opacity(0.9), Color.blue], startPoint: .top, endPoint: .bottom)
+                        )
                         .foregroundColor(.white)
                         .cornerRadius(10)
+                        .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 2)
                     }
                     .padding(.horizontal)
                     
-                    Button(lang.t("ble_disconnect")) {
+                    Button(action: {
                         bleManager.disconnect()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "xmark.circle.fill")
+                            Text(lang.t("ble_disconnect"))
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.red.opacity(0.12))
+                        .foregroundColor(.red)
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.red.opacity(0.3), lineWidth: 1))
                     }
-                    .foregroundColor(.red)
-                    .padding(.top, 6)
+                    .padding(.horizontal)
+                    .padding(.top, 4)
                 }
             } else {
                 Button(action: {
                     bleManager.scan()
                 }) {
-                    HStack {
+                    HStack(spacing: 8) {
                         Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 15, weight: .bold))
                         Text(lang.t("ble_scan_btn"))
-                            .bold()
+                            .font(.system(size: 15, weight: .bold))
                     }
-                    .padding()
+                    .padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(bleManager.isBluetoothOn ? Color.blue : Color.gray)
+                    .background(
+                        bleManager.isBluetoothOn
+                            ? LinearGradient(colors: [Color.blue.opacity(0.9), Color.blue], startPoint: .top, endPoint: .bottom)
+                            : LinearGradient(colors: [Color.gray, Color.gray], startPoint: .top, endPoint: .bottom)
+                    )
                     .foregroundColor(.white)
                     .cornerRadius(10)
+                    .shadow(color: bleManager.isBluetoothOn ? Color.blue.opacity(0.3) : Color.clear, radius: 3, x: 0, y: 2)
                 }
                 .disabled(!bleManager.isBluetoothOn)
                 .padding(.horizontal)
@@ -906,10 +931,17 @@ struct ConnectionView: View {
                                 .foregroundColor(isCert ? .green : .orange)
                             }
                             Spacer()
-                            Button("Connetti") {
+                            Button(action: {
                                 bleManager.connect(peripheral: peripheral)
+                            }) {
+                                Text("Connetti")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 8)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
                             }
-                            .buttonStyle(BorderedProminentButtonStyle())
                         }
                         .padding(.vertical, 4)
                     }
@@ -939,19 +971,35 @@ struct TerminalView: View {
                 Spacer()
                 
                 Button(action: { obd2Manager.toggleTelemetry() }) {
-                    Label(obd2Manager.isPollingPaused ? lang.t("telemetry_start") : lang.t("telemetry_stop"),
-                          systemImage: obd2Manager.isPollingPaused ? "play.circle.fill" : "stop.circle.fill")
-                        .font(.subheadline)
-                        .bold()
+                    HStack(spacing: 6) {
+                        Image(systemName: obd2Manager.isPollingPaused ? "play.fill" : "pause.fill")
+                            .font(.system(size: 13, weight: .bold))
+                        Text(obd2Manager.isPollingPaused ? lang.t("telemetry_start") : lang.t("telemetry_stop"))
+                            .font(.system(size: 13, weight: .bold))
+                            .lineLimit(1)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(obd2Manager.isPollingPaused ? Color.green : Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .shadow(color: (obd2Manager.isPollingPaused ? Color.green : Color.orange).opacity(0.3), radius: 3, x: 0, y: 1)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(obd2Manager.isPollingPaused ? .green : .orange)
                 
                 Button(action: { obd2Manager.terminalOutput.removeAll() }) {
-                    Label(lang.t("term_clear"), systemImage: "trash")
-                        .font(.subheadline)
+                    HStack(spacing: 5) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 13))
+                        Text(lang.t("term_clear"))
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.secondary.opacity(0.18))
+                    .foregroundColor(.primary)
+                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
                 }
-                .buttonStyle(.bordered)
             }
             .padding(.horizontal)
             .padding(.top, 10)
@@ -982,7 +1030,7 @@ struct TerminalView: View {
                 TextField("ATSH 7B0, 1003, 1902FF, ATMA...", text: $commandInput)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 
-                Button(lang.t("term_send")) {
+                Button(action: {
                     if !commandInput.isEmpty {
                         let check = OBD2Manager.isDangerousCommand(commandInput)
                         if check.isDangerous {
@@ -994,8 +1042,19 @@ struct TerminalView: View {
                             commandInput = ""
                         }
                     }
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "paperplane.fill")
+                            .font(.system(size: 13))
+                        Text(lang.t("term_send"))
+                            .font(.system(size: 14, weight: .bold))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
                 }
-                .buttonStyle(BorderedProminentButtonStyle())
             }
             .padding(.horizontal)
             .padding(.bottom, 12)
@@ -1060,21 +1119,23 @@ struct SettingsView: View {
                                     _ = await storeManager.purchasePro()
                                 }
                             }) {
-                                HStack {
+                                HStack(spacing: 8) {
                                     if storeManager.isPurchasing {
                                         ProgressView().scaleEffect(0.8)
                                     } else {
-                                        Image(systemName: "cart.fill")
+                                        Image(systemName: "crown.fill")
                                     }
                                     Text("Acquista YaDiag Pro (29,99 €)")
-                                        .bold()
+                                        .font(.system(size: 14, weight: .bold))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.85)
                                 }
-                                .font(.subheadline)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 6)
+                                .padding(.vertical, 10)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.blue)
                             .disabled(storeManager.isPurchasing)
                             
                             Button(action: {
@@ -1083,9 +1144,14 @@ struct SettingsView: View {
                                 }
                             }) {
                                 Text("Ripristina")
-                                    .font(.subheadline)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(Color.secondary.opacity(0.18))
+                                    .foregroundColor(.primary)
+                                    .cornerRadius(10)
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
                             }
-                            .buttonStyle(.bordered)
                         }
                         
                         if let err = storeManager.purchaseErrorMessage {

@@ -155,12 +155,11 @@ struct ActuatorTestView: View {
                         Button(action: {
                             obd2Manager.stopABSHydraulicTest()
                         }) {
-                            HStack {
-                                Image(systemName: "stop.circle.fill")
+                            HStack(spacing: 6) {
+                                Image(systemName: "stop.fill")
                                 Text(lang.t("act_abs_stop_btn"))
-                                    .bold()
+                                    .font(.system(size: 13, weight: .bold))
                             }
-                            .font(.caption)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(Color.red)
@@ -225,22 +224,25 @@ struct ActuatorTestView: View {
                                         showingResetConfirmAlert = true
                                     }
                                 }) {
-                                    HStack {
+                                    HStack(spacing: 8) {
                                         if !StoreManager.shared.isProUnlocked {
                                             Image(systemName: "lock.fill")
                                             Text("Sblocca con YaDiag Pro")
-                                                .bold()
+                                                .font(.system(size: 14, weight: .bold))
                                         } else {
-                                            Image(systemName: actuator.isABSTest ? "drop.circle.fill" : "arrow.counterclockwise.circle.fill")
+                                            Image(systemName: actuator.isABSTest ? "drop.fill" : "arrow.counterclockwise")
                                             Text(actuator.isABSTest ? (obd2Manager.isABSTestRunning ? "Test in corso (\(obd2Manager.absTestCountdown)s)..." : "Avvia Test Pompa ABS") : "Esegui Reset Adattivo (Cod. \(actuator.code))")
-                                                .bold()
+                                                .font(.system(size: 14, weight: .bold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.85)
                                         }
                                     }
                                     .frame(maxWidth: .infinity)
-                                    .padding(12)
+                                    .padding(.vertical, 12)
                                     .background(!StoreManager.shared.isProUnlocked ? Color.blue : (isEngineRunning || (actuator.isABSTest && obd2Manager.isABSTestRunning) ? Color.gray : (actuator.isABSTest ? Color.orange : Color.red.opacity(0.85))))
                                     .foregroundColor(.white)
-                                    .cornerRadius(8)
+                                    .cornerRadius(10)
+                                    .shadow(color: (!StoreManager.shared.isProUnlocked ? Color.blue : (actuator.isABSTest ? Color.orange : Color.red)).opacity(0.25), radius: 3, x: 0, y: 2)
                                 }
                                 .disabled(StoreManager.shared.isProUnlocked && (isEngineRunning || (actuator.isABSTest && obd2Manager.isABSTestRunning)))
                             }
