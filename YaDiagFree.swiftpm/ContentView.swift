@@ -38,44 +38,52 @@ struct ContentView: View {
         _obd2Manager = StateObject(wrappedValue: OBD2Manager(bleManager: ble))
     }
     
+    @AppStorage("selected_tab") private var selectedTab: Int = 0
+    
     var body: some View {
         ZStack {
-            TabView {
+            TabView(selection: $selectedTab) {
                 DashboardView(obd2Manager: obd2Manager)
                     .tabItem { 
                         Image(systemName: "gauge")
                         Text(lang.t("tab_dash"))
                     }
+                    .tag(0)
                 
                 DiagnosticsView(obd2Manager: obd2Manager, aiManager: aiManager)
                     .tabItem { 
                         Image(systemName: "wrench.and.screwdriver")
                         Text(lang.t("tab_dtc")) 
                     }
+                    .tag(1)
                     
                 TerminalView(obd2Manager: obd2Manager)
                     .tabItem { 
                         Image(systemName: "terminal")
                         Text(lang.t("tab_term")) 
                     }
+                    .tag(2)
                 
                 ConnectionView(bleManager: bleManager, obd2Manager: obd2Manager)
                     .tabItem { 
                         Image(systemName: "antenna.radiowaves.left.and.right")
                         Text(lang.t("tab_ble")) 
                     }
+                    .tag(3)
                     
                 ActuatorTestView(obd2Manager: obd2Manager)
                     .tabItem {
                         Image(systemName: "bolt.fill")
                         Text(lang.t("tab_actuators"))
                     }
+                    .tag(4)
                     
                 SettingsView(aiManager: aiManager)
                     .tabItem { 
                         Image(systemName: "gear")
                         Text(lang.t("tab_setup")) 
                     }
+                    .tag(5)
                 
                 InfoView(onShowDisclaimer: {
                     showingManualDisclaimer = true
@@ -84,6 +92,7 @@ struct ContentView: View {
                         Image(systemName: "info.circle.fill")
                         Text(lang.t("tab_info"))
                     }
+                    .tag(6)
             }
             .padding()
             #if os(macOS)

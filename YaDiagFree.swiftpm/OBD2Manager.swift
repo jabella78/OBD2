@@ -33,6 +33,54 @@ enum DiagnosticTargetECU: String, CaseIterable, Identifiable {
     }
 }
 
+struct DTCLocalizedEntry: Codable {
+    let en: String
+    let it: String
+    let fr: String?
+    let es: String?
+    let de: String?
+    
+    init(en: String, it: String, fr: String? = nil, es: String? = nil, de: String? = nil) {
+        self.en = en
+        self.it = it
+        self.fr = fr
+        self.es = es
+        self.de = de
+    }
+    
+    init(from decoder: Decoder) throws {
+        if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+            self.en = (try? container.decode(String.self, forKey: .en)) ?? ""
+            self.it = (try? container.decode(String.self, forKey: .it)) ?? ""
+            self.fr = try? container.decodeIfPresent(String.self, forKey: .fr)
+            self.es = try? container.decodeIfPresent(String.self, forKey: .es)
+            self.de = try? container.decodeIfPresent(String.self, forKey: .de)
+        } else {
+            let singleValue = try decoder.singleValueContainer()
+            let str = try singleValue.decode(String.self)
+            self.en = str
+            self.it = str
+            self.fr = str
+            self.es = str
+            self.de = str
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case en, it, fr, es, de
+    }
+    
+    func localized() -> String {
+        switch LocalizationManager.shared.currentLanguage {
+        case .italian: return it
+        case .french: return fr ?? en
+        case .spanish: return es ?? en
+        case .german: return de ?? en
+        case .english: return en
+        }
+    }
+}
+
 class OBD2Manager: ObservableObject {
     var bleManager: BLEManager
     
@@ -110,7 +158,7 @@ class OBD2Manager: ObservableObject {
     private var currentProbeHeader: String = ""
     private var timeoutWorkItem: DispatchWorkItem?
     
-    var dtcDatabase: [String: String] = [:]
+    var dtcDatabase: [String: DTCLocalizedEntry] = [:]
     
     init(bleManager: BLEManager) {
         self.bleManager = bleManager
@@ -120,20 +168,30 @@ class OBD2Manager: ObservableObject {
         }
         
         loadDTCDatabase()
+        
+        if UserDefaults.standard.bool(forKey: "auto_start_demo_mode") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.startVirtualSimulatorMode()
+            }
+        }
     }
     
     private func loadDTCDatabase() {
         if let url = Bundle.main.url(forResource: "dtc_database", withExtension: "json"),
            let data = try? Data(contentsOf: url),
-           let db = try? JSONDecoder().decode([String: String].self, from: data) {
+           let db = try? JSONDecoder().decode([String: DTCLocalizedEntry].self, from: data) {
             self.dtcDatabase = db
         }
+    }
+    
+    func getDTCDescription(for code: String) -> String? {
+        return dtcDatabase[code]?.localized()
     }
     
     func lookupABSCode(_ codeNumber: String) -> String {
         let key = "ABS_\(codeNumber)"
         let absLabel = self.localizedMsg(en: "ABS Code", it: "Codice ABS", fr: "Code ABS", es: "Código ABS", de: "ABS-Code")
-        if let desc = dtcDatabase[key] {
+        if let desc = getDTCDescription(for: key) {
             return "\(absLabel) \(codeNumber): \(desc)"
         }
         let fallback = self.localizedMsg(
@@ -314,18 +372,46 @@ class OBD2Manager: ObservableObject {
         }
         
         DispatchQueue.main.async {
+            let dtc1Desc = self.localizedMsg(
+                en: "ECT Coolant Temperature Sensor Circuit (Simulated fault)",
+                it: "Circuito Sensore Temperatura Refrigerante ECT (Guasto simulato)",
+                fr: "Circuit Capteur Température Liquide Refroidissement ECT (Défaut simulé)",
+                es: "Circuito Sensor Temperatura Refrigerante ECT (Fallo simulado)",
+                de: "Kühlmitteltemperatursensor-Stromkreis ECT (Simulierter Fehler)"
+            )
+            let dtc2Desc = self.localizedMsg(
+                en: "O2 Lambda Sensor Circuit Bank 1 Sensor 1 (Simulated fault)",
+                it: "Circuito Sensore Sonda Lambda O2 Banco 1 (Guasto simulato)",
+                fr: "Circuit Sonde Lambda O2 Banc 1 (Défaut simulé)",
+                es: "Circuito Sensor Sonda Lambda O2 Banco 1 (Fallo simulado)",
+                de: "O2-Sensorkreis Bank 1 Sensor 1 (Simulierter Fehler)"
+            )
             self.dtcCodes = [
-                "P0115: Circuito Sensore Temperatura Refrigerante ECT (Guasto simulato)",
-                "P0130: Circuito Sensore Sonda Lambda O2 Banco 1 (Guasto simulato)"
+                "P0115: \(dtc1Desc)",
+                "P0130: \(dtc2Desc)"
             ]
-            self.absDtcCodes = ["Codice ABS 41: Sensore velocità ruota anteriore (segnale anomalo / circuito aperto)"]
+            let absDesc = self.localizedMsg(
+                en: "ABS Code 41: Front wheel speed sensor (anomalous signal / open circuit)",
+                it: "Codice ABS 41: Sensore velocità ruota anteriore (segnale anomalo / circuito aperto)",
+                fr: "Code ABS 41: Capteur de vitesse roue avant (signal anormal / circuit ouvert)",
+                es: "Código ABS 41: Sensor de velocidad rueda delantera (señal anómala / circuito abierto)",
+                de: "ABS-Code 41: Vorderrad-Geschwindigkeitssensor (anomales Signal / offener Stromkreis)"
+            )
+            self.absDtcCodes = [absDesc]
             self.iscLearningStatus = "Cil #1: 0x82F0 | Cil #2: 0x8435 | Cil #3: 0x8435\nStato: 🟡 VALORI DEPOSITI MEDI (Reg. 0x54)"
             self.o2LearningStatus = "Trim: 0x01FC / 0x0255 | Cicli: 0x000A\nStato: ✅ APPRESO REGOLARE (Reg. 0x52)"
             self.coCylindersStatus = "Cil #1: 0x82 (+2) | Cil #2: 0x80 (0) | Cil #3: 0x81 (+1)"
             self.throttleCleaningLevel = 2
             self.throttleDirtPercentage = 42.0
             self.throttleCleaningStatus = "🟡 DEPOSITI MEDI RILEVATI (Apertura compensata: 42%). Consigliata pulizia o reset ISC."
-            self.terminalOutput.append(TerminalLine(text: "[SIMULATORE] Adattatore Virtuale OBD2 connesso e attivo."))
+            let simConnectedMsg = self.localizedMsg(
+                en: "[SIMULATOR] Virtual OBD2 Adapter connected and active.",
+                it: "[SIMULATORE] Adattatore Virtuale OBD2 connesso e attivo.",
+                fr: "[SIMULATEUR] Adaptateur virtuel OBD2 connecté et actif.",
+                es: "[SIMULADOR] Adaptador virtual OBD2 conectado y activo.",
+                de: "[SIMULATOR] Virtueller OBD2-Adapter verbunden und aktiv."
+            )
+            self.terminalOutput.append(TerminalLine(text: simConnectedMsg))
         }
     }
     
@@ -1217,7 +1303,7 @@ class OBD2Manager: ObservableObject {
                     let pCode = decodeDTCFromBytes(b1, b2)
                     let notInDb = self.localizedMsg(en: "Fault code not found in offline DB", it: "Guasto non presente nel DB offline", fr: "Code défaut absent de la base locale", es: "Código no presente en la BD local", de: "Fehler nicht in lokaler Datenbank")
                     let errLabel = self.localizedMsg(en: "Fault", it: "Errore", fr: "Défaut", es: "Avería", de: "Fehler")
-                    let desc = dtcDatabase[pCode] ?? notInDb
+                    let desc = getDTCDescription(for: pCode) ?? notInDb
                     decodedCodes.append("\(errLabel) \(pCode): \(desc)")
                 }
                 idx = next4
@@ -1233,7 +1319,7 @@ class OBD2Manager: ObservableObject {
                     let pCode = decodeDTCFromBytes(b1, b2)
                     let notInDb = self.localizedMsg(en: "Fault code not found in offline DB", it: "Guasto non presente nel DB offline", fr: "Code défaut absent de la base locale", es: "Código no presente en la BD local", de: "Fehler nicht in lokaler Datenbank")
                     let errLabel = self.localizedMsg(en: "Fault", it: "Errore", fr: "Défaut", es: "Avería", de: "Fehler")
-                    let desc = dtcDatabase[pCode] ?? notInDb
+                    let desc = getDTCDescription(for: pCode) ?? notInDb
                     decodedCodes.append("\(errLabel) \(pCode): \(desc)")
                 }
                 idx = next4

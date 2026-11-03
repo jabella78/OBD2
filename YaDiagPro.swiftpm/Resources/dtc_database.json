@@ -1,74 +1,506 @@
 {
-  "P2135" : "TPS: Differenza di segnale tra le tracce del sensore posizione farfalla.",
-  "P0117" : "Sensore temperatura liquido raffreddamento: tensione bassa (cortocircuito).",
-  "P0201" : "Iniettore cilindro #1: circuito aperto o cortocircuito.",
-  "P1602" : "Malfunzionamento circuito interno ECU (alimentazione di backup).",
-  "P0108" : "Sensore pressione aria aspirata (MAP): tensione alta.",
-  "P0222" : "Sensore posizione farfalla (TPS): tensione bassa.",
-  "P0112" : "Sensore temperatura aria aspirata (IAT): tensione bassa.",
-  "P062F" : "Errore memoria interna EEPROM dell'ECU.",
-  "P2158" : "Sensore velocità ruota anteriore / Comunicazione CAN con ABS ECU anomala.",
-  "P0223" : "Sensore posizione farfalla (TPS): tensione alta.",
-  "P0132" : "Sonda Lambda (O2): tensione alta (miscela costantemente ricca o corto).",
-  "P0638" : "Sistema YCC-T (Ride-by-Wire): malfunzionamento servomotore farfalla.",
-  "P0113" : "Sensore temperatura aria aspirata (IAT): tensione alta / circuito aperto.",
-  "P1004" : "Malfunzionamento sistema di controllo motore.",
-  "P2195" : "Sonda Lambda (O2): circuito aperto rilevato.",
-  "P0030" : "Riscaldatore Sonda Lambda (O2): circuito aperto o guasto.",
-  "P0122" : "Sensore posizione farfalla (TPS): tensione bassa.",
-  "P0335" : "Sensore posizione albero motore (CKP): nessun segnale normale ricevuto.",
-  "P0118" : "Sensore temperatura liquido raffreddamento: tensione alta / circuito aperto.",
-  "P0123" : "Sensore posizione farfalla (TPS): tensione alta.",
-  "P1606" : "Tensione sensori ECU: tensione bassa.",
-  "P2127" : "Sensore posizione acceleratore (APS): tensione bassa.",
-  "P0351" : "Bobina accensione cilindro #1: circuito aperto o cortocircuito.",
-  "P0657" : "Tensione sistema iniezione: alimentazione errata agli iniettori / relè.",
-  "P1607" : "Tensione sensori ECU: tensione alta.",
-  "P1500" : "Interruttore frizione: segnale anomalo.",
-  "P1604" : "Sensore angolo di piega (Lean Angle): tensione bassa.",
-  "P2122" : "Sensore posizione acceleratore (APS): tensione bassa.",
-  "P0352" : "Bobina accensione cilindro #2: circuito aperto o cortocircuito.",
-  "P2128" : "Sensore posizione acceleratore (APS): tensione alta.",
-  "P0203" : "Iniettore cilindro #3: circuito aperto o cortocircuito.",
-  "P0353" : "Bobina accensione cilindro #3: circuito aperto o cortocircuito.",
-  "P0202" : "Iniettore cilindro #2: circuito aperto o cortocircuito.",
-  "P2123" : "Sensore posizione acceleratore (APS): tensione alta.",
-  "P0107" : "Sensore pressione aria aspirata (MAP): tensione bassa.",
-  "P1601" : "Interruttore cavalletto laterale: circuito aperto o cortocircuito.",
-  "P1605" : "Sensore angolo di piega (Lean Angle): tensione alta.",
-  "P0560" : "Tensione di ricarica batteria anomala (Regolatore/Statore).",
-  "P1400" : "Solenoide sistema induzione aria (AIS): circuito aperto o cortocircuito.",
-  "P2138" : "APS: Differenza di segnale tra le tracce del sensore acceleratore.",
-  "ABS_11" : "Sensore ruota anteriore: impulsi assenti o intermittenti (>20s a ruota ant. ferma). Controllare sporco/metallo sul sensore o ruota fonica.",
-  "ABS_12" : "Sensore ruota posteriore: impulsi assenti o intermittenti. Controllare sporco sul sensore, montaggio ruota o ruota fonica.",
-  "ABS_13" : "Sensore ruota anteriore: periodo impulsi anomalo (ABS attivo per >36s o fondo sconnesso). Controllare ruota fonica e sensore.",
-  "ABS_14" : "Sensore ruota posteriore: periodo impulsi anomalo (ABS attivo per >36s o fondo sconnesso). Controllare ruota fonica e sensore.",
-  "ABS_15" : "Sensore ruota anteriore: circuito aperto o cortocircuito nel cablaggio tra sensore e unità idraulica ABS.",
-  "ABS_16" : "Sensore ruota posteriore: circuito aperto o cortocircuito nel cablaggio tra sensore e unità idraulica ABS.",
-  "ABS_17" : "Sensore ruota anteriore: perdita di impulsi rilevata a velocità >= 30 km/h. Controllare distanza/pulizia sensore e ruota fonica.",
-  "ABS_18" : "Sensore ruota posteriore: perdita di impulsi rilevata a velocità >= 30 km/h. Controllare distanza/pulizia sensore e ruota fonica.",
-  "ABS_21" : "Unità idraulica ABS: circuito pilota solenoide aperto o in cortocircuito (difetto interno modulo ABS).",
-  "ABS_24" : "Interruttore luce stop o fanale posteriore: segnale freno anteriore/posteriore non ricevuto correttamente.",
-  "ABS_25" : "Sensore ruota anteriore: impulsi assenti per >2s con ruota posteriore in rotazione (es. impennata o cavalletto centrale).",
-  "ABS_26" : "Sensore ruota anteriore: periodo impulsi anomalo (ABS anteriore attivo per >20s).",
-  "ABS_27" : "Sensore ruota posteriore: periodo impulsi anomalo (ABS posteriore attivo per >20s).",
-  "ABS_31" : "Unità idraulica ABS: alimentazione solenoide ABS assente. Controllare fusibile solenoide ABS e cablaggio batteria.",
-  "ABS_32" : "Unità idraulica ABS: cortocircuito nel circuito di alimentazione solenoide ABS.",
-  "ABS_33" : "Unità idraulica ABS: alimentazione motore pompa ABS assente. Controllare fusibile motore ABS e cablaggio.",
-  "ABS_34" : "Unità idraulica ABS: cortocircuito nel circuito di alimentazione motore pompa ABS.",
-  "ABS_41" : "ABS ruota anteriore: impulsi intermittenti o mancata depressurizzazione (ruota non si sblocca). Controllare trascinamento freno o tubi.",
-  "ABS_42" : "ABS ruota posteriore: impulsi intermittenti o mancata depressurizzazione. Controllare sensore o trascinamento freno posteriore.",
-  "ABS_43" : "Sensore ruota anteriore: perdita di impulsi durante la marcia. Controllare pulizia sensore e ruota fonica.",
-  "ABS_44" : "Sensore ruota posteriore: perdita di impulsi durante la marcia. Controllare pulizia sensore e ruota fonica.",
-  "ABS_45" : "Sensore ruota anteriore: perdita di impulsi rilevata a velocità <= 29 km/h.",
-  "ABS_46" : "Sensore ruota posteriore: perdita di impulsi rilevata a velocità <= 29 km/h.",
-  "ABS_47" : "ABS ruota posteriore: mancata depressurizzazione idraulica (la ruota tende a restare bloccata). Controllare freno e unità idraulica.",
-  "ABS_51" : "Alimentazione sistema: tensione alla centralina ABS troppo alta. Controllare regolatore di tensione e batteria.",
-  "ABS_52" : "Alimentazione sensori ruota: tensione alimentazione sensori troppo alta. Controllare sistema di ricarica.",
-  "ABS_53" : "Alimentazione sistema: tensione alla centralina ABS troppo bassa. Controllare carica batteria, morsetti e cablaggio.",
-  "ABS_54" : "Unità idraulica ABS: anomalia circuito alimentazione solenoide e motore pompa ABS. Controllare batteria e connessioni.",
-  "ABS_55" : "Unità idraulica ABS: errore interno centralina ABS ECU.",
-  "ABS_56" : "Unità idraulica ABS: anomalia alimentazione interna modulo idraulico.",
-  "ABS_63" : "Alimentazione sensore ruota anteriore: tensione erogata dall'ABS ECU troppo bassa (possibile corto nel cavo sensore ant.).",
-  "ABS_64" : "Alimentazione sensore ruota posteriore: tensione erogata dall'ABS ECU troppo bassa (possibile corto nel cavo sensore post.)."
+  "P0030": {
+    "en": "O2 Lambda Sensor Heater: Circuit open or heater malfunction.",
+    "it": "Riscaldatore Sonda Lambda (O2): circuito aperto o guasto.",
+    "fr": "Chauffage sonde Lambda (O2) : circuit ouvert ou défaillant.",
+    "es": "Calentador sonda Lambda (O2): circuito abierto o fallo.",
+    "de": "O2-Lambda-Sondenheizung: Stromkreis offen oder defekt."
+  },
+  "P0107": {
+    "en": "Intake Air Pressure (MAP) Sensor: Low voltage (short to ground).",
+    "it": "Sensore pressione aria aspirata (MAP): tensione bassa (corto a massa).",
+    "fr": "Capteur pression admission (MAP) : tension basse (court-circuit).",
+    "es": "Sensor presión admisión (MAP): tensión baja (cortocircuito a masa).",
+    "de": "Saugrohrdrucksensor (MAP): Spannung zu niedrig (Kurzschluss nach Masse)."
+  },
+  "P0108": {
+    "en": "Intake Air Pressure (MAP) Sensor: High voltage (open circuit or short to power).",
+    "it": "Sensore pressione aria aspirata (MAP): tensione alta (circuito aperto o corto al positivo).",
+    "fr": "Capteur pression admission (MAP) : tension haute (circuit ouvert).",
+    "es": "Sensor presión admisión (MAP): tensión alta (circuito abierto).",
+    "de": "Saugrohrdrucksensor (MAP): Spannung zu hoch (offener Stromkreis)."
+  },
+  "P0112": {
+    "en": "Intake Air Temperature (IAT) Sensor: Low voltage (short circuit).",
+    "it": "Sensore temperatura aria aspirata (IAT): tensione bassa (cortocircuito).",
+    "fr": "Capteur température air admission (IAT) : tension basse (court-circuit).",
+    "es": "Sensor temperatura aire admisión (IAT): tensión baja (cortocircuito).",
+    "de": "Ansauglufttemperatursensor (IAT): Spannung zu niedrig (Kurzschluss)."
+  },
+  "P0113": {
+    "en": "Intake Air Temperature (IAT) Sensor: High voltage / open circuit.",
+    "it": "Sensore temperatura aria aspirata (IAT): tensione alta / circuito aperto.",
+    "fr": "Capteur température air admission (IAT) : tension haute / circuit ouvert.",
+    "es": "Sensor temperatura aire admisión (IAT): tensión alta / circuito abierto.",
+    "de": "Ansauglufttemperatursensor (IAT): Spannung zu hoch / Stromkreis offen."
+  },
+  "P0117": {
+    "en": "Engine Coolant Temperature (ECT) Sensor: Low voltage (short circuit).",
+    "it": "Sensore temperatura liquido raffreddamento (ECT): tensione bassa (cortocircuito).",
+    "fr": "Capteur température liquide refroidissement (ECT) : tension basse (court-circuit).",
+    "es": "Sensor temperatura refrigerante (ECT): tensión baja (cortocircuito).",
+    "de": "Kühlmitteltemperatursensor (ECT): Spannung zu niedrig (Kurzschluss)."
+  },
+  "P0118": {
+    "en": "Engine Coolant Temperature (ECT) Sensor: High voltage / open circuit.",
+    "it": "Sensore temperatura liquido raffreddamento (ECT): tensione alta / circuito aperto.",
+    "fr": "Capteur température liquide refroidissement (ECT) : tension haute / circuit ouvert.",
+    "es": "Sensor temperatura refrigerante (ECT): tensión alta / circuito abierto.",
+    "de": "Kühlmitteltemperatursensor (ECT): Spannung zu hoch / Stromkreis offen."
+  },
+  "P0122": {
+    "en": "Throttle Position Sensor (TPS Track 1): Low voltage.",
+    "it": "Sensore posizione farfalla (TPS Traccia 1): tensione bassa.",
+    "fr": "Capteur position papillon (TPS Piste 1) : tension basse.",
+    "es": "Sensor posición mariposa (TPS Pista 1): tensión baja.",
+    "de": "Drosselklappenpositionssensor (TPS Bahn 1): Spannung zu niedrig."
+  },
+  "P0123": {
+    "en": "Throttle Position Sensor (TPS Track 1): High voltage.",
+    "it": "Sensore posizione farfalla (TPS Traccia 1): tensione alta.",
+    "fr": "Capteur position papillon (TPS Piste 1) : tension haute.",
+    "es": "Sensor posición mariposa (TPS Pista 1): tensión alta.",
+    "de": "Drosselklappenpositionssensor (TPS Bahn 1): Spannung zu hoch."
+  },
+  "P0132": {
+    "en": "O2 Lambda Sensor: High voltage (rich mixture or short circuit).",
+    "it": "Sonda Lambda (O2): tensione alta (miscela ricca o cortocircuito).",
+    "fr": "Sonde Lambda (O2) : tension haute (mélange trop riche ou court-circuit).",
+    "es": "Sonda Lambda (O2): tensión alta (mezcla rica o cortocircuito).",
+    "de": "O2-Lambdasonde: Spannung zu hoch (Gemisch zu fett oder Kurzschluss)."
+  },
+  "P0201": {
+    "en": "Cylinder #1 Fuel Injector: Circuit open or short circuit.",
+    "it": "Iniettore cilindro #1: circuito aperto o cortocircuito.",
+    "fr": "Injecteur cylindre n°1 : circuit ouvert ou court-circuit.",
+    "es": "Inyector cilindro #1: circuito abierto o cortocircuito.",
+    "de": "Einspritzventil Zylinder 1: Stromkreis offen oder Kurzschluss."
+  },
+  "P0202": {
+    "en": "Cylinder #2 Fuel Injector: Circuit open or short circuit.",
+    "it": "Iniettore cilindro #2: circuito aperto o cortocircuito.",
+    "fr": "Injecteur cylindre n°2 : circuit ouvert ou court-circuit.",
+    "es": "Inyector cilindro #2: circuito abierto o cortocircuito.",
+    "de": "Einspritzventil Zylinder 2: Stromkreis offen oder Kurzschluss."
+  },
+  "P0203": {
+    "en": "Cylinder #3 Fuel Injector: Circuit open or short circuit.",
+    "it": "Iniettore cilindro #3: circuito aperto o cortocircuito.",
+    "fr": "Injecteur cylindre n°3 : circuit ouvert ou court-circuit.",
+    "es": "Inyector cilindro #3: circuito abierto o cortocircuito.",
+    "de": "Einspritzventil Zylinder 3: Stromkreis offen oder Kurzschluss."
+  },
+  "P0222": {
+    "en": "Throttle Position Sensor (TPS Track 2): Low voltage.",
+    "it": "Sensore posizione farfalla (TPS Traccia 2): tensione bassa.",
+    "fr": "Capteur position papillon (TPS Piste 2) : tension basse.",
+    "es": "Sensor posición mariposa (TPS Pista 2): tensión baja.",
+    "de": "Drosselklappenpositionssensor (TPS Bahn 2): Spannung zu niedrig."
+  },
+  "P0223": {
+    "en": "Throttle Position Sensor (TPS Track 2): High voltage.",
+    "it": "Sensore posizione farfalla (TPS Traccia 2): tensione alta.",
+    "fr": "Capteur position papillon (TPS Piste 2) : tension haute.",
+    "es": "Sensor posición mariposa (TPS Pista 2): tensión alta.",
+    "de": "Drosselklappenpositionssensor (TPS Bahn 2): Spannung zu hoch."
+  },
+  "P0335": {
+    "en": "Crankshaft Position (CKP) Sensor: No normal signal received.",
+    "it": "Sensore posizione albero motore (CKP): nessun segnale normale ricevuto.",
+    "fr": "Capteur position vilebrequin (CKP) : aucun signal régulier détecté.",
+    "es": "Sensor posición cigüeñal (CKP): no se recibe señal normal.",
+    "de": "Kurbelwellen-Positionssensor (CKP): Kein normales Signal empfangen."
+  },
+  "P0351": {
+    "en": "Cylinder #1 Ignition Coil: Circuit open or short circuit.",
+    "it": "Bobina accensione cilindro #1: circuito aperto o cortocircuito.",
+    "fr": "Bobine d'allumage cylindre n°1 : circuit ouvert ou court-circuit.",
+    "es": "Bobina de encendido cilindro #1: circuito abierto o cortocircuito.",
+    "de": "Zündspule Zylinder 1: Stromkreis offen oder Kurzschluss."
+  },
+  "P0352": {
+    "en": "Cylinder #2 Ignition Coil: Circuit open or short circuit.",
+    "it": "Bobina accensione cilindro #2: circuito aperto o cortocircuito.",
+    "fr": "Bobine d'allumage cylindre n°2 : circuit ouvert ou court-circuit.",
+    "es": "Bobina de encendido cilindro #2: circuito abierto o cortocircuito.",
+    "de": "Zündspule Zylinder 2: Stromkreis offen oder Kurzschluss."
+  },
+  "P0353": {
+    "en": "Cylinder #3 Ignition Coil: Circuit open or short circuit.",
+    "it": "Bobina accensione cilindro #3: circuito aperto o cortocircuito.",
+    "fr": "Bobine d'allumage cylindre n°3 : circuit ouvert ou court-circuit.",
+    "es": "Bobina de encendido cilindro #3: circuito abierto o cortocircuito.",
+    "de": "Zündspule Zylinder 3: Stromkreis offen oder Kurzschluss."
+  },
+  "P0560": {
+    "en": "System Charging Voltage: Abnormal battery charge voltage (Regulator/Stator).",
+    "it": "Tensione di ricarica batteria anomala (Regolatore/Statore).",
+    "fr": "Tension de charge système anormale (Régulateur/Stator).",
+    "es": "Tensión de carga del sistema anómala (Regulador/Estator).",
+    "de": "Ladesystem-Spannung fehlerhaft (Spannungsregler/Lichtmaschine)."
+  },
+  "P062F": {
+    "en": "Internal ECU EEPROM Memory Error.",
+    "it": "Errore memoria interna EEPROM dell'ECU.",
+    "fr": "Erreur mémoire EEPROM interne de l'ECU.",
+    "es": "Error de memoria interna EEPROM de la ECU.",
+    "de": "Interner EEPROM-Speicherfehler des Motorsteuergeräts."
+  },
+  "P0638": {
+    "en": "YCC-T Ride-by-Wire System: Throttle actuator motor malfunction.",
+    "it": "Sistema YCC-T (Ride-by-Wire): malfunzionamento servomotore farfalla.",
+    "fr": "Système YCC-T (Ride-by-Wire) : dysfonctionnement servomoteur papillon.",
+    "es": "Sistema YCC-T (Ride-by-Wire): fallo en servomotor de mariposa.",
+    "de": "YCC-T (Ride-by-Wire) System: Stellmotor-Fehlfunktion der Drosselklappe."
+  },
+  "P0657": {
+    "en": "Actuator Power Voltage: Incorrect voltage to fuel injectors or main relay.",
+    "it": "Tensione sistema iniezione: alimentazione errata agli iniettori o relè principale.",
+    "fr": "Tension alimentation actionneurs : alimentation défaillante injecteurs ou relais.",
+    "es": "Tensión actuadores inyección: alimentación defectuosa a inyectores o relé.",
+    "de": "Aktor-Spannungsversorgung: Fehlerhafte Einspritzventil-/Hauptrelaisspannung."
+  },
+  "P1004": {
+    "en": "Engine Control Management System: Communication or processing anomaly.",
+    "it": "Malfunzionamento sistema di controllo gestione motore.",
+    "fr": "Dysfonctionnement du système de gestion moteur.",
+    "es": "Fallo en el sistema de gestión del motor.",
+    "de": "Fehlfunktion des Motormanagementsystems."
+  },
+  "P1400": {
+    "en": "Air Induction System (AIS) Solenoid: Circuit open or short circuit.",
+    "it": "Solenoide sistema induzione aria (AIS): circuito aperto o cortocircuito.",
+    "fr": "Solénoïde d'induction d'air (AIS) : circuit ouvert ou court-circuit.",
+    "es": "Solenoide inducción de aire (AIS): circuito abierto o cortocircuito.",
+    "de": "Sekundärluftventil (AIS) Magnetventil: Stromkreis offen oder Kurzschluss."
+  },
+  "P1500": {
+    "en": "Clutch Switch: Abnormal signal received.",
+    "it": "Interruttore frizione: segnale anomalo.",
+    "fr": "Contacteur d'embrayage : signal anormal.",
+    "es": "Interruptor de embrague: señal anómala.",
+    "de": "Kupplungsschalter: Anomales Signal empfangen."
+  },
+  "P1601": {
+    "en": "Sidestand Switch: Circuit open or short circuit.",
+    "it": "Interruttore cavalletto laterale: circuito aperto o cortocircuito.",
+    "fr": "Contacteur béquille latérale : circuit ouvert ou court-circuit.",
+    "es": "Interruptor pata de cabra: circuito abierto o cortocircuito.",
+    "de": "Seitenständerschalter: Stromkreis offen oder Kurzschluss."
+  },
+  "P1602": {
+    "en": "Internal ECU Power Circuit: Backup power circuit malfunction.",
+    "it": "Malfunzionamento circuito interno ECU (alimentazione di backup).",
+    "fr": "Dysfonctionnement alimentation de secours interne de l'ECU.",
+    "es": "Fallo en circuito interno de la ECU (alimentación de reserva).",
+    "de": "Interner ECU-Stromkreis: Störung der Pufferbatterie-/Dauerstromversorgung."
+  },
+  "P1604": {
+    "en": "Lean Angle Sensor: Low voltage.",
+    "it": "Sensore angolo di piega (Lean Angle): tensione bassa.",
+    "fr": "Capteur d'angle d'inclinaison : tension basse.",
+    "es": "Sensor de ángulo de inclinación: tensión baja.",
+    "de": "Schräglagensensor (Kippsensor): Spannung zu niedrig."
+  },
+  "P1605": {
+    "en": "Lean Angle Sensor: High voltage.",
+    "it": "Sensore angolo di piega (Lean Angle): tensione alta.",
+    "fr": "Capteur d'angle d'inclinaison : tension haute.",
+    "es": "Sensor de ángulo de inclinación: tensión alta.",
+    "de": "Schräglagensensor (Kippsensor): Spannung zu hoch."
+  },
+  "P1606": {
+    "en": "ECU Sensor Power Supply: Voltage too low.",
+    "it": "Tensione alimentazione sensori ECU: tensione troppo bassa.",
+    "fr": "Alimentation capteurs ECU : tension trop basse.",
+    "es": "Alimentación sensores ECU: tensión demasiado baja.",
+    "de": "Sensor-Spannungsversorgung der ECU: Spannung zu niedrig."
+  },
+  "P1607": {
+    "en": "ECU Sensor Power Supply: Voltage too high.",
+    "it": "Tensione alimentazione sensori ECU: tensione troppo alta.",
+    "fr": "Alimentation capteurs ECU : tension trop haute.",
+    "es": "Alimentación sensores ECU: tensión demasiado alta.",
+    "de": "Sensor-Spannungsversorgung der ECU: Spannung zu hoch."
+  },
+  "P2122": {
+    "en": "Accelerator Position Sensor (APS Track 1): Low voltage.",
+    "it": "Sensore posizione acceleratore (APS Traccia 1): tensione bassa.",
+    "fr": "Capteur position accélérateur (APS Piste 1) : tension basse.",
+    "es": "Sensor posición acelerador (APS Pista 1): tensión baja.",
+    "de": "Gasgriff-Positionssensor (APS Bahn 1): Spannung zu niedrig."
+  },
+  "P2123": {
+    "en": "Accelerator Position Sensor (APS Track 1): High voltage.",
+    "it": "Sensore posizione acceleratore (APS Traccia 1): tensione alta.",
+    "fr": "Capteur position accélérateur (APS Piste 1) : tension haute.",
+    "es": "Sensor posición acelerador (APS Pista 1): tensión alta.",
+    "de": "Gasgriff-Positionssensor (APS Bahn 1): Spannung zu hoch."
+  },
+  "P2127": {
+    "en": "Accelerator Position Sensor (APS Track 2): Low voltage.",
+    "it": "Sensore posizione acceleratore (APS Traccia 2): tensione bassa.",
+    "fr": "Capteur position accélérateur (APS Piste 2) : tension basse.",
+    "es": "Sensor posición acelerador (APS Pista 2): tensión baja.",
+    "de": "Gasgriff-Positionssensor (APS Bahn 2): Spannung zu niedrig."
+  },
+  "P2128": {
+    "en": "Accelerator Position Sensor (APS Track 2): High voltage.",
+    "it": "Sensore posizione acceleratore (APS Traccia 2): tensione alta.",
+    "fr": "Capteur position accélérateur (APS Piste 2) : tension haute.",
+    "es": "Sensor posición acelerador (APS Pista 2): tensione alta.",
+    "de": "Gasgriff-Positionssensor (APS Bahn 2): Spannung zu hoch."
+  },
+  "P2135": {
+    "en": "TPS: Signal correlation difference between throttle position sensor tracks.",
+    "it": "TPS: Differenza di segnale tra le tracce del sensore posizione farfalla.",
+    "fr": "TPS : Écart de signal entre les pistes du capteur de position du papillon.",
+    "es": "TPS: Discrepancia de señal entre las pistas del sensor de posición de mariposa.",
+    "de": "TPS: Signalspannungs-Differenz zwischen den Drosselklappen-Poti-Bahnen."
+  },
+  "P2138": {
+    "en": "APS: Signal correlation difference between accelerator sensor tracks.",
+    "it": "APS: Differenza di segnale tra le tracce del sensore acceleratore.",
+    "fr": "APS : Écart de signal entre les pistes du capteur d'accélérateur.",
+    "es": "APS: Discrepancia de señal entre las pistas del sensor del acelerador.",
+    "de": "APS: Signalspannungs-Differenz zwischen den Gasgriff-Sensor-Bahnen."
+  },
+  "P2158": {
+    "en": "Front Wheel Speed Sensor / CAN Communication error with ABS ECU.",
+    "it": "Sensore velocità ruota anteriore / Comunicazione CAN con ABS ECU anomala.",
+    "fr": "Capteur vitesse roue avant / Communication CAN anormale avec l'ECU ABS.",
+    "es": "Sensor de velocidad rueda delantera / Fallo de comunicación CAN con ABS ECU.",
+    "de": "Vorderrad-Geschwindigkeitssensor / CAN-Bus-Kommunikationsfehler mit ABS-Steuergerät."
+  },
+  "P2195": {
+    "en": "O2 Lambda Sensor: Open circuit detected.",
+    "it": "Sonda Lambda (O2): circuito aperto rilevato.",
+    "fr": "Sonde Lambda (O2) : circuit ouvert détecté.",
+    "es": "Sonda Lambda (O2): circuito abierto detectado.",
+    "de": "O2-Lambdasonde: Offener Stromkreis erkannt."
+  },
+  "ABS_11": {
+    "en": "Front wheel sensor: Missing or intermittent pulses (>20s front wheel stopped). Check sensor gap, dirt or pulser ring.",
+    "it": "Sensore ruota anteriore: impulsi assenti o intermittenti (>20s a ruota ant. ferma). Controllare sporco/metallo sul sensore o ruota fonica.",
+    "fr": "Capteur roue avant : impulsions absentes ou intermittentes. Vérifiez l'entrefer, la propreté ou la cible ABS.",
+    "es": "Sensor rueda delantera: pulsos ausentes o intermitentes. Compruebe distancia, suciedad o disco fónico.",
+    "de": "Vorderradsensor: Fehlende oder unregelmäßige Impulse. Sensorabstand, Verschmutzung oder Geberrad prüfen."
+  },
+  "ABS_12": {
+    "en": "Rear wheel sensor: Missing or intermittent pulses. Check sensor gap, dirt, wheel installation or pulser ring.",
+    "it": "Sensore ruota posteriore: impulsi assenti o intermittenti. Controllare sporco sul sensore, montaggio ruota o ruota fonica.",
+    "fr": "Capteur roue arrière : impulsions absentes ou intermittentes. Vérifiez le capteur, le montage ou la cible ABS.",
+    "es": "Sensor rueda trasera: pulsos ausentes o intermitentes. Compruebe sensor, montaje de rueda o disco fónico.",
+    "de": "Hinterradsensor: Fehlende oder unregelmäßige Impulse. Sensorabstand, Verschmutzung oder Geberrad prüfen."
+  },
+  "ABS_13": {
+    "en": "Front wheel sensor: Irregular pulse period (ABS active >36s or uneven surface). Check pulser ring and sensor.",
+    "it": "Sensore ruota anteriore: periodo impulsi anomalo (ABS attivo per >36s o fondo sconnesso). Controllare ruota fonica e sensore.",
+    "fr": "Capteur roue avant : période d'impulsions anormale (ABS actif >36s). Vérifiez la cible et le capteur.",
+    "es": "Sensor rueda delantera: período de pulsos anómalo (ABS activo >36s). Compruebe sensor y disco fónico.",
+    "de": "Vorderradsensor: Unregelmäßige Impulsperiode (ABS aktiv >36s). Geberrad und Sensor prüfen."
+  },
+  "ABS_14": {
+    "en": "Rear wheel sensor: Irregular pulse period (ABS active >36s or uneven surface). Check pulser ring and sensor.",
+    "it": "Sensore ruota posteriore: periodo impulsi anomalo (ABS attivo per >36s o fondo sconnesso). Controllare ruota fonica e sensore.",
+    "fr": "Capteur roue arrière : période d'impulsions anormale (ABS actif >36s). Vérifiez la cible et le capteur.",
+    "es": "Sensor rueda trasera: período de pulsos anómalo (ABS activo >36s). Compruebe sensor y disco fónico.",
+    "de": "Hinterradsensor: Unregelmäßige Impulsperiode (ABS aktiv >36s). Geberrad und Sensor prüfen."
+  },
+  "ABS_15": {
+    "en": "Front wheel sensor: Open or short circuit in wiring between sensor and ABS hydraulic unit.",
+    "it": "Sensore ruota anteriore: circuito aperto o cortocircuito nel cablaggio tra sensore e unità idraulica ABS.",
+    "fr": "Capteur roue avant : circuit ouvert ou court-circuit dans le câblage vers le module ABS.",
+    "es": "Sensor rueda delantera: circuito abierto o cortocircuito en el cableado a la unidad hidráulica ABS.",
+    "de": "Vorderradsensor: Offener Stromkreis oder Kurzschluss in der Verkabelung zum ABS-Hydraulikblock."
+  },
+  "ABS_16": {
+    "en": "Rear wheel sensor: Open or short circuit in wiring between sensor and ABS hydraulic unit.",
+    "it": "Sensore ruota posteriore: circuito aperto o cortocircuito nel cablaggio tra sensore e unità idraulica ABS.",
+    "fr": "Capteur roue arrière : circuit ouvert ou court-circuit dans le câblage vers le module ABS.",
+    "es": "Sensor rueda trasera: circuito abierto o cortocircuito en el cableado a la unidad hidráulica ABS.",
+    "de": "Hinterradsensor: Offener Stromkreis oder Kurzschluss in der Verkabelung zum ABS-Hydraulikblock."
+  },
+  "ABS_17": {
+    "en": "Front wheel sensor: Missing pulses detected at speed >= 30 km/h. Check sensor gap/cleanliness and pulser ring.",
+    "it": "Sensore ruota anteriore: perdita di impulsi rilevata a velocità >= 30 km/h. Controllare distanza/pulizia sensore e ruota fonica.",
+    "fr": "Capteur roue avant : perte d'impulsions détectée à vitesse >= 30 km/h. Vérifiez entrefer et propreté.",
+    "es": "Sensor rueda delantera: pérdida de pulsos detectada a velocidad >= 30 km/h. Compruebe sensor y disco fónico.",
+    "de": "Vorderradsensor: Impulsverlust bei Geschwindigkeit >= 30 km/h erkannt. Sensorabstand und Geberrad prüfen."
+  },
+  "ABS_18": {
+    "en": "Rear wheel sensor: Missing pulses detected at speed >= 30 km/h. Check sensor gap/cleanliness and pulser ring.",
+    "it": "Sensore ruota posteriore: perdita di impulsi rilevata a velocità >= 30 km/h. Controllare distanza/pulizia sensore e ruota fonica.",
+    "fr": "Capteur roue arrière : perte d'impulsions détectée à vitesse >= 30 km/h. Vérifiez entrefer et propreté.",
+    "es": "Sensor rueda trasera: pérdida de pulsos detectada a velocidad >= 30 km/h. Compruebe sensor y disco fónico.",
+    "de": "Hinterradsensor: Impulsverlust bei Geschwindigkeit >= 30 km/h erkannt. Sensorabstand und Geberrad prüfen."
+  },
+  "ABS_21": {
+    "en": "ABS hydraulic unit: Solenoid driver circuit open or short (internal ABS module fault).",
+    "it": "Unità idraulica ABS: circuito pilota solenoide aperto o in cortocircuito (difetto interno modulo ABS).",
+    "fr": "Module hydraulique ABS : circuit solénoïde ouvert ou en court-circuit (défaut interne ABS).",
+    "es": "Unidad hidráulica ABS: circuito de electroválvula abierto o cortocircuitado (fallo interno ABS).",
+    "de": "ABS-Hydraulikeinheit: Magnetventil-Treiberkreis offen oder Kurzschluss (interner Modulfehler)."
+  },
+  "ABS_24": {
+    "en": "Brake light switch: Front/rear brake signal not received properly.",
+    "it": "Interruttore luce stop o fanale posteriore: segnale freno anteriore/posteriore non ricevuto correttamente.",
+    "fr": "Contacteur feux stop : signal de frein avant/arrière non reçu correctement.",
+    "es": "Interruptor luz de freno: señal de freno delantero/trasero no recibida correctamente.",
+    "de": "Bremslichtschalter: Bremshebel-/-pedalsignal nicht ordnungsgemäß empfangen."
+  },
+  "ABS_25": {
+    "en": "Front wheel sensor: Missing pulses for >2s while rear wheel is spinning (e.g. wheelie or center stand).",
+    "it": "Sensore ruota anteriore: impulsi assenti per >2s con ruota posteriore in rotazione (es. impennata o cavalletto centrale).",
+    "fr": "Capteur roue avant : impulsions absentes >2s avec roue arrière en rotation (wheeling ou béquille centrale).",
+    "es": "Sensor rueda delantera: pulsos ausentes >2s con rueda trasera girando (caballito o caballete central).",
+    "de": "Vorderradsensor: Keine Impulse für >2s bei drehendem Hinterrad (z. B. Wheelie oder Hauptständer)."
+  },
+  "ABS_26": {
+    "en": "Front wheel sensor: Irregular pulse period (front ABS actively cycling >20s).",
+    "it": "Sensore ruota anteriore: periodo impulsi anomalo (ABS anteriore attivo per >20s).",
+    "fr": "Capteur roue avant : période d'impulsions anormale (ABS avant actif pendant >20s).",
+    "es": "Sensor rueda delantera: período de pulsos anómalo (ABS delantero activo >20s).",
+    "de": "Vorderradsensor: Anomale Impulsperiode (ABS vorne aktiv für >20s)."
+  },
+  "ABS_27": {
+    "en": "Rear wheel sensor: Irregular pulse period (rear ABS actively cycling >20s).",
+    "it": "Sensore ruota posteriore: periodo impulsi anomalo (ABS posteriore attivo per >20s).",
+    "fr": "Capteur roue arrière : période d'impulsions anormale (ABS arrière actif pendant >20s).",
+    "es": "Sensor rueda trasera: período de pulsos anómalo (ABS trasero activo >20s).",
+    "de": "Hinterradsensor: Anomale Impulsperiode (ABS hinten aktiv für >20s)."
+  },
+  "ABS_31": {
+    "en": "ABS hydraulic unit: Solenoid power supply missing. Check ABS solenoid fuse and battery harness.",
+    "it": "Unità idraulica ABS: alimentazione solenoide ABS assente. Controllare fusibile solenoide ABS e cablaggio batteria.",
+    "fr": "Module hydraulique ABS : alimentation solénoïdes absente. Vérifiez le fusible solénoïde ABS et batterie.",
+    "es": "Unidad hidráulica ABS: sin alimentación a electroválvulas. Compruebe fusible ABS y cableado.",
+    "de": "ABS-Hydraulikeinheit: Magnetventil-Stromversorgung fehlt. ABS-Ventilsicherung und Batterie prüfen."
+  },
+  "ABS_32": {
+    "en": "ABS hydraulic unit: Short circuit in ABS solenoid power supply circuit.",
+    "it": "Unità idraulica ABS: cortocircuito nel circuito di alimentazione solenoide ABS.",
+    "fr": "Module hydraulique ABS : court-circuit dans l'alimentation des solénoïdes ABS.",
+    "es": "Unidad hidráulica ABS: cortocircuito en el circuito de alimentación de electroválvulas.",
+    "de": "ABS-Hydraulikeinheit: Kurzschluss im Stromversorgungskreis der ABS-Magnetventile."
+  },
+  "ABS_33": {
+    "en": "ABS hydraulic unit: ABS pump motor power supply missing. Check ABS motor fuse and wiring.",
+    "it": "Unità idraulica ABS: alimentazione motore pompa ABS assente. Controllare fusibile motore ABS e cablaggio.",
+    "fr": "Module hydraulique ABS : alimentation moteur pompe absente. Vérifiez le fusible du moteur ABS.",
+    "es": "Unidad hidráulica ABS: sin alimentación a motor de bomba ABS. Compruebe fusible de bomba.",
+    "de": "ABS-Hydraulikeinheit: ABS-Pumpenmotor-Stromversorgung fehlt. ABS-Motorsicherung prüfen."
+  },
+  "ABS_34": {
+    "en": "ABS hydraulic unit: Short circuit in ABS pump motor power supply circuit.",
+    "it": "Unità idraulica ABS: cortocircuito nel circuito di alimentazione motore pompa ABS.",
+    "fr": "Module hydraulique ABS : court-circuit dans le circuit du moteur de pompe ABS.",
+    "es": "Unidad hidráulica ABS: cortocircuito en el circuito del motor de bomba ABS.",
+    "de": "ABS-Hydraulikeinheit: Kurzschluss im Stromversorgungskreis des Pumpenmotors."
+  },
+  "ABS_41": {
+    "en": "Front wheel ABS: Intermittent pulses or hydraulic pressure release failure (wheel fails to unlock). Check brake drag or hoses.",
+    "it": "ABS ruota anteriore: impulsi intermittenti o mancata depressurizzazione (ruota non si sblocca). Controllare trascinamento freno o tubi.",
+    "fr": "ABS roue avant : impulsions intermittentes ou défaut de dépressurisation (roue ne se débloque pas).",
+    "es": "ABS rueda delantera: pulsos intermitentes o fallo de despresurización hidráulica (rueda no desbloquea).",
+    "de": "Vorderrad-ABS: Unregelmäßige Impulse oder fehlende Druckentlastung (Rad löst nicht). Bremszange prüfen."
+  },
+  "ABS_42": {
+    "en": "Rear wheel ABS: Intermittent pulses or hydraulic pressure release failure. Check rear brake drag or sensor.",
+    "it": "ABS ruota posteriore: impulsi intermittenti o mancata depressurizzazione. Controllare sensore o trascinamento freno posteriore.",
+    "fr": "ABS roue arrière : impulsions intermittentes ou défaut de dépressurisation. Vérifiez l'étrier arrière.",
+    "es": "ABS rueda trasera: pulsos intermitentes o fallo de despresurización. Compruebe pinza o sensor trasero.",
+    "de": "Hinterrad-ABS: Unregelmäßige Impulse oder fehlende Druckentlastung. Hinterradbremse prüfen."
+  },
+  "ABS_43": {
+    "en": "Front wheel sensor: Missing pulses while vehicle in motion. Check cleanliness of sensor and pulser ring.",
+    "it": "Sensore ruota anteriore: perdita di impulsi durante la marcia. Controllare pulizia sensore e ruota fonica.",
+    "fr": "Capteur roue avant : perte d'impulsions en roulant. Vérifiez l'état et la propreté du capteur.",
+    "es": "Sensor rueda delantera: pérdida de pulsos en marcha. Compruebe limpieza de sensor y disco fónico.",
+    "de": "Vorderradsensor: Impulsverlust während der Fahrt. Sensor und Geberrad reinigen."
+  },
+  "ABS_44": {
+    "en": "Rear wheel sensor: Missing pulses while vehicle in motion. Check cleanliness of sensor and pulser ring.",
+    "it": "Sensore ruota posteriore: perdita di impulsi durante la marcia. Controllare pulizia sensore e ruota fonica.",
+    "fr": "Capteur roue arrière : perte d'impulsions en roulant. Vérifiez l'état et la propreté du capteur.",
+    "es": "Sensor rueda trasera: pérdida de pulsos en marcha. Compruebe limpieza de sensor y disco fónico.",
+    "de": "Hinterradsensor: Impulsverlust während der Fahrt. Sensor und Geberrad reinigen."
+  },
+  "ABS_45": {
+    "en": "Front wheel sensor: Missing pulses detected at low speed (<= 29 km/h).",
+    "it": "Sensore ruota anteriore: perdita di impulsi rilevata a bassa velocità (<= 29 km/h).",
+    "fr": "Capteur roue avant : perte d'impulsions détectée à basse vitesse (<= 29 km/h).",
+    "es": "Sensor rueda delantera: pérdida de pulsos detectada a baja velocidad (<= 29 km/h).",
+    "de": "Vorderradsensor: Impulsverlust bei niedriger Geschwindigkeit (<= 29 km/h) erkannt."
+  },
+  "ABS_46": {
+    "en": "Rear wheel sensor: Missing pulses detected at low speed (<= 29 km/h).",
+    "it": "Sensore ruota posteriore: perdita di impulsi rilevata a bassa velocità (<= 29 km/h).",
+    "fr": "Capteur roue arrière : perte d'impulsions détectée à basse vitesse (<= 29 km/h).",
+    "es": "Sensor rueda trasera: pérdida de pulsos detectada a baja velocidad (<= 29 km/h).",
+    "de": "Hinterradsensor: Impulsverlust bei niedriger Geschwindigkeit (<= 29 km/h) erkannt."
+  },
+  "ABS_47": {
+    "en": "Rear wheel ABS: Hydraulic pressure release failure (wheel tends to stay locked). Check caliper and ABS unit.",
+    "it": "ABS ruota posteriore: mancata depressurizzazione idraulica (la ruota tende a restare bloccata). Controllare freno e unità idraulica.",
+    "fr": "ABS roue arrière : défaut de dépressurisation hydraulique (la roue reste bloquée). Vérifiez l'étrier.",
+    "es": "ABS rueda trasera: fallo de despresurización hidráulica (la rueda tiende a bloquearse). Compruebe freno y ABS.",
+    "de": "Hinterrad-ABS: Hydraulische Druckentlastung fehlgeschlagen (Rad blockiert). Bremsanlage prüfen."
+  },
+  "ABS_51": {
+    "en": "System Power Supply: Voltage to ABS ECU too high. Check voltage regulator and battery condition.",
+    "it": "Alimentazione sistema: tensione alla centralina ABS troppo alta. Controllare regolatore di tensione e batteria.",
+    "fr": "Alimentation système : tension à l'ECU ABS trop haute. Vérifiez le régulateur et la batterie.",
+    "es": "Alimentación del sistema: tensión a la ECU ABS demasiado alta. Compruebe regulador y batería.",
+    "de": "Systemspannung: Spannung am ABS-Steuergerät zu hoch. Spannungsregler und Batterie prüfen."
+  },
+  "ABS_52": {
+    "en": "Wheel Sensor Power Supply: Supply voltage too high. Check motorcycle charging system.",
+    "it": "Alimentazione sensori ruota: tensione alimentazione sensori troppo alta. Controllare sistema di ricarica.",
+    "fr": "Alimentation capteurs de roue : tension trop haute. Vérifiez le circuit de charge.",
+    "es": "Alimentación sensores de rueda: tensión demasiado alta. Compruebe el sistema de carga.",
+    "de": "Radsensor-Stromversorgung: Versorgungsspannung zu hoch. Ladesystem prüfen."
+  },
+  "ABS_53": {
+    "en": "System Power Supply: Voltage to ABS ECU too low. Check battery charge, terminals and wiring.",
+    "it": "Alimentazione sistema: tensione alla centralina ABS troppo bassa. Controllare carica batteria, morsetti e cablaggio.",
+    "fr": "Alimentation système : tension à l'ECU ABS trop basse. Vérifiez la charge batterie et les bornes.",
+    "es": "Alimentación del sistema: tensión a la ECU ABS demasiado baja. Compruebe batería y bornes.",
+    "de": "Systemspannung: Spannung am ABS-Steuergerät zu niedrig. Batterieladung und Anschlüsse prüfen."
+  },
+  "ABS_54": {
+    "en": "ABS hydraulic unit: Solenoid and pump motor power circuit anomaly. Check battery and main connections.",
+    "it": "Unità idraulica ABS: anomalia circuito alimentazione solenoide e motore pompa ABS. Controllare batteria e connessioni.",
+    "fr": "Module hydraulique ABS : anomalie alimentation solénoïdes et pompe ABS. Vérifiez connecteurs et batterie.",
+    "es": "Unidad hidráulica ABS: anomalía en alimentación de solenoide y motor de bomba. Compruebe conexiones.",
+    "de": "ABS-Hydraulikeinheit: Störung im Versorgungskreis von Magnetventil und Pumpenmotor."
+  },
+  "ABS_55": {
+    "en": "ABS hydraulic unit: Internal ABS ECU microprocessor error.",
+    "it": "Unità idraulica ABS: errore interno centralina ABS ECU.",
+    "fr": "Module hydraulique ABS : erreur microprocesseur interne de l'ECU ABS.",
+    "es": "Unidad hidráulica ABS: error interno de microprocesador en la ECU ABS.",
+    "de": "ABS-Hydraulikeinheit: Interner Prozessorfehler im ABS-Steuergerät."
+  },
+  "ABS_56": {
+    "en": "ABS hydraulic unit: Internal module power supply anomaly.",
+    "it": "Unità idraulica ABS: anomalia alimentazione interna modulo idraulico.",
+    "fr": "Module hydraulique ABS : anomalie alimentation interne du module.",
+    "es": "Unidad hidráulica ABS: anomalía en alimentación interna del módulo.",
+    "de": "ABS-Hydraulikeinheit: Störung der internen Spannungsversorgung des Moduls."
+  },
+  "ABS_63": {
+    "en": "Front Wheel Sensor Power Supply: Supply voltage from ABS ECU too low (possible short in harness).",
+    "it": "Alimentazione sensore ruota anteriore: tensione erogata dall'ABS ECU troppo bassa (possibile corto nel cablaggio).",
+    "fr": "Alimentation capteur roue avant : tension fournie par l'ECU trop basse (court-circuit possible).",
+    "es": "Alimentación sensor rueda delantera: tensión suministrada demasiado baja (posible cortocircuito).",
+    "de": "Vorderradsensor-Spannungsversorgung: Spannung vom ABS-Steuergerät zu niedrig (mögliche Kurzschluss im Kabelbaum)."
+  },
+  "ABS_64": {
+    "en": "Rear Wheel Sensor Power Supply: Supply voltage from ABS ECU too low (possible short in harness).",
+    "it": "Alimentazione sensore ruota posteriore: tensione erogata dall'ABS ECU troppo bassa (possibile corto nel cablaggio).",
+    "fr": "Alimentation capteur roue arrière : tension fournie par l'ECU trop basse (court-circuit possible).",
+    "es": "Alimentación sensor rueda trasera: tensión suministrada demasiado baja (posible cortocircuito).",
+    "de": "Hinterradsensor-Spannungsversorgung: Spannung vom ABS-Steuergerät zu niedrig (mögliche Kurzschluss im Kabelbaum)."
+  }
 }
