@@ -742,6 +742,10 @@ public class LocalizationManager: ObservableObject {
                 DisclaimerArticle(
                     title: "4. Sicurezza Stradale e Normative Vigenti",
                     text: "Tutti i test diagnostici e le cancellazioni errori devono essere eseguiti a veicolo fermo, in massima sicurezza e su suolo privato chiuso al traffico, nel rispetto del Codice della Strada (D.Lgs. 285/1992) e delle normative antinquinamento Euro 4 / Euro 5."
+                ),
+                DisclaimerArticle(
+                    title: "5. Telemetria Diagnostica Anonima per Compatibilità Hardware",
+                    text: "Al solo scopo di verificare e migliorare la compatibilità dell'app con i diversi modelli di moto, centraline e adattatori OBD2 Bluetooth, l'applicazione raccoglie e trasmette periodicamente a un server cloud sicuro dati tecnici aggregati in forma strettamente anonima (marca e modello adattatore BLE, versione protocollo ELM/KWP/UDS, ID centraline rilevate e codici diagnostici). NON vengono mai raccolti né trasmessi dati identificativi dell'utente, posizione GPS o numeri di targa/telaio (VIN)."
                 )
             ]
         case .english:
@@ -761,6 +765,10 @@ public class LocalizationManager: ObservableObject {
                 DisclaimerArticle(
                     title: "4. Road Safety & Traffic Regulations",
                     text: "All advanced diagnostic tests, actuator routines, and DTC erasures must be carried out strictly with the vehicle stationary, in safe conditions on private closed grounds, in full compliance with traffic safety laws and Euro 4 / Euro 5 emissions standards."
+                ),
+                DisclaimerArticle(
+                    title: "5. Anonymous Diagnostic Telemetry for Compatibility",
+                    text: "To monitor, verify and improve hardware compatibility across various motorcycle models, ECU firmware revisions and BLE OBD2 adapters, the app periodically sends anonymous diagnostic telemetry to a secure cloud server (adapter model name, ELM/KWP protocol responses, detected CAN header IDs, and fault codes). No personal identity, GPS location, license plate, or vehicle VIN is ever collected or transmitted."
                 )
             ]
         case .french:
@@ -780,6 +788,10 @@ public class LocalizationManager: ObservableObject {
                 DisclaimerArticle(
                     title: "4. Sécurité Routière & Réglementation",
                     text: "Tous les tests actionneurs et effacements de codes doivent être impérativement effectués sur véhicule à l'arrêt, en toute sécurité sur terrain privé fermé à la circulation, conformément au Code de la Route et aux normes d'émissions Euro 4 / Euro 5."
+                ),
+                DisclaimerArticle(
+                    title: "5. Données de Diagnostic Anonymes & Compatibilité",
+                    text: "Afin de vérifier et d'améliorer la compatibilité matérielle (adaptateurs BLE, protocoles ELM/KWP/UDS et versions calculateurs), l'application transmet des données techniques anonymisées vers un serveur cloud sécurisé. Aucune donnée d'identification personnelle, géolocalisation ou numéro de série n'est collectée."
                 )
             ]
         case .spanish:
@@ -799,6 +811,10 @@ public class LocalizationManager: ObservableObject {
                 DisclaimerArticle(
                     title: "4. Seguridad Vial y Normativas Vigentes",
                     text: "Todas las pruebas de diagnóstico y borrado de averías deben ejecutarse exclusivamente con el vehículo detenido, en condiciones seguras en recinto privado cerrado al tráfico, cumpliendo las leyes de seguridad vial y normativas Euro 4 / Euro 5."
+                ),
+                DisclaimerArticle(
+                    title: "5. Telemetría Diagnóstica Anónima para Compatibilidad",
+                    text: "Con el único propósito de verificar y optimizar la compatibilidad entre modelos de motocicletas, centralitas y adaptadores OBD2 Bluetooth, la app transmite datos técnicos anónimos a un servidor en la nube (modelo de adaptador, versión de protocolo y códigos de diagnóstico). En ningún caso se recopila información personal, ubicación GPS o número de bastidor."
                 )
             ]
         case .german:
@@ -818,6 +834,10 @@ public class LocalizationManager: ObservableObject {
                 DisclaimerArticle(
                     title: "4. Verkehrssicherheit & Umweltnormen",
                     text: "Alle erweiterten Stellgliedtests und Fehlerspeicherlöschungen dürfen ausschließlich bei stehendem Fahrzeug auf abgesperrtem Privatgelände unter strikter Einhaltung der Straßenverkehrsordnung und Euro-4 / Euro-5 Abgasnormen erfolgen."
+                ),
+                DisclaimerArticle(
+                    title: "5. Anonyme Diagnosedaten für Hardware-Kompatibilität",
+                    text: "Zur kontinuierlichen Überprüfung und Optimierung der Kompatibilität verschiedener Motorrad- und Steuergeräte-Modelle sowie Bluetooth-OBD2-Adapter überträgt die App rein technische, anonymisierte Diagnosedaten an einen sicheren Cloud-Server. Es werden niemals personenbezogene Daten, GPS-Standorte oder Fahrgestellnummern (VIN) erfasst."
                 )
             ]
         }
