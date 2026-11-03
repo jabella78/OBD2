@@ -1,0 +1,40 @@
+{
+  "identifier" : "E2B7A8C9",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "29.99",
+      "familyShareable" : true,
+      "internalID" : "PRO001",
+      "localizations" : [
+        {
+          "description" : "Sblocca Test Pompa ABS, Reset Corpi Farfallati ISC, Reset Lambda O2 e Telemetria AI avanzata.",
+          "displayName" : "YaDiag Pro Lifetime",
+          "locale" : "it"
+        },
+        {
+          "description" : "Unlock ABS Pump Test, ISC Throttle Reset, O2 Lambda Reset and AI Telemetry diagnostics.",
+          "displayName" : "YaDiag Pro Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.jabella78.yadiag.pro",
+      "referenceName" : "YaDiag Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "it",
+    "_storefront" : "ITA"
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}

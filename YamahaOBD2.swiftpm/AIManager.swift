@@ -250,10 +250,19 @@ class AIManager: ObservableObject {
     
     private func loadKeyForProvider(_ provider: AIProvider) -> String {
         let key = "AIKey_\(provider.rawValue)"
-        if let val = UserDefaults.standard.string(forKey: key) {
+        // Cerca prima nel portachiavi sicuro (Keychain)
+        if let secureVal = KeychainHelper.load(key: key), !secureVal.isEmpty {
+            return secureVal
+        }
+        // Migrazione automatica da UserDefaults se precedentemente presente
+        if let val = UserDefaults.standard.string(forKey: key), !val.isEmpty {
+            KeychainHelper.save(key: key, value: val)
+            UserDefaults.standard.removeObject(forKey: key)
             return val
         }
-        if provider == .gemini, let oldGemini = UserDefaults.standard.string(forKey: "GeminiAPIKey") {
+        if provider == .gemini, let oldGemini = UserDefaults.standard.string(forKey: "GeminiAPIKey"), !oldGemini.isEmpty {
+            KeychainHelper.save(key: key, value: oldGemini)
+            UserDefaults.standard.removeObject(forKey: "GeminiAPIKey")
             return oldGemini
         }
         return ""
@@ -261,9 +270,15 @@ class AIManager: ObservableObject {
     
     private func saveKeyForCurrentProvider() {
         let key = "AIKey_\(selectedProvider.rawValue)"
-        UserDefaults.standard.set(apiKey, forKey: key)
+        if apiKey.isEmpty {
+            KeychainHelper.delete(key: key)
+        } else {
+            KeychainHelper.save(key: key, value: apiKey)
+        }
+        // Pulisce residui insicuri in UserDefaults
+        UserDefaults.standard.removeObject(forKey: key)
         if selectedProvider == .gemini {
-            UserDefaults.standard.set(apiKey, forKey: "GeminiAPIKey")
+            UserDefaults.standard.removeObject(forKey: "GeminiAPIKey")
         }
     }
     
@@ -373,12 +388,15 @@ class AIManager: ObservableObject {
     }
     
     private func fetchGeminiModels() {
-        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models?key=\(apiKey)") else {
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models") else {
             DispatchQueue.main.async { self.isFetchingModels = false }
             return
         }
         
-        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+        var request = URLRequest(url: url)
+        request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 self.isFetchingModels = false
@@ -641,7 +659,7 @@ class AIManager: ObservableObject {
     // 1) Google Gemini
     private func callGeminiAPI(prompt: String) {
         let model = selectedModel.isEmpty ? "gemini-4-flash" : selectedModel
-        let urlStr = "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent?key=\(apiKey)"
+        let urlStr = "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent"
         guard let url = URL(string: urlStr) else {
             self.setResult("URL API non valido per Gemini.")
             return
@@ -650,6 +668,7 @@ class AIManager: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
         
         let body: [String: Any] = [
             "contents": [

@@ -325,6 +325,22 @@ struct DashboardView: View {
                 
                 // Barra Controlli: Telemetria Live & Registrazione CSV
                 HStack(spacing: 12) {
+                    // Pulsante Demo Mode (Simulazione)
+                    Button(action: {
+                        obd2Manager.toggleDemoMode()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: obd2Manager.isDemoMode ? "play.slash.fill" : "play.laptopcomputer")
+                            Text(obd2Manager.isDemoMode ? "Demo ON" : "Demo")
+                                .font(.caption)
+                                .bold()
+                        }
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(obd2Manager.isDemoMode ? .purple : .secondary)
+                    
                     // Pulsante Attiva/Disattiva Telemetria Live
                     Button(action: {
                         obd2Manager.toggleTelemetry()
@@ -469,6 +485,8 @@ struct DiagnosticsView: View {
     @ObservedObject var obd2Manager: OBD2Manager
     @ObservedObject var aiManager: AIManager
     @ObservedObject var lang = LocalizationManager.shared
+    @State private var showingAIConsentAlert: Bool = false
+    @State private var pendingAIAction: (() -> Void)? = nil
     @State private var manualABSCodeInput: String = ""
     
     let absHeaders = ["7E3", "7B0", "7E2", "760"]
@@ -579,7 +597,12 @@ struct DiagnosticsView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(Color.red.opacity(0.85))
                     
-                    Button(action: { aiManager.evaluateFaultCodes(activeCodesList) }) {
+                    Button(action: {
+                        pendingAIAction = {
+                            aiManager.evaluateFaultCodes(activeCodesList)
+                        }
+                        showingAIConsentAlert = true
+                    }) {
                         VStack(spacing: 6) {
                             Image(systemName: "sparkles")
                                 .font(.title3)
@@ -594,7 +617,10 @@ struct DiagnosticsView: View {
                     
                     Button(action: {
                         if let path = obd2Manager.currentTelemetryFilePath, let data = try? String(contentsOf: path, encoding: .utf8) {
-                            aiManager.evaluateTelemetry(csvData: data)
+                            pendingAIAction = {
+                                aiManager.evaluateTelemetry(csvData: data)
+                            }
+                            showingAIConsentAlert = true
                         } else {
                             aiManager.evaluationResult = lang.currentLanguage == .english ? "No telemetry data found. Start recording in Dashboard." : (lang.currentLanguage == .french ? "Aucune donnée de télémétrie. Démarrez l'enregistrement." : (lang.currentLanguage == .spanish ? "Sin datos de telemetría. Inicia la grabación en el Tablero." : (lang.currentLanguage == .german ? "Keine Telemetriedaten gefunden. Aufnahme im Cockpit starten." : "Nessun dato di telemetria trovato. Avvia la registrazione nel Cruscotto.")))
                         }
@@ -678,6 +704,17 @@ struct DiagnosticsView: View {
                 }
             }
             .padding(.bottom, 20)
+        }
+        .alert("Condivisione Dati con Servizio AI Esterno", isPresented: $showingAIConsentAlert) {
+            Button("Acconsenti e Invia", role: .none) {
+                pendingAIAction?()
+                pendingAIAction = nil
+            }
+            Button("Annulla", role: .cancel) {
+                pendingAIAction = nil
+            }
+        } message: {
+            Text("I dati tecnici diagnostici (codici guasto o telemetria della sessione) verranno trasmessi all'endpoint cloud di \(aiManager.selectedProvider.rawValue) per generare la valutazione meccanica specialistica.\n\nNessun dato personale o di identificazione veicolo/targa viene trasmesso.")
         }
     }
 }
@@ -834,6 +871,9 @@ struct TerminalView: View {
     @ObservedObject var obd2Manager: OBD2Manager
     @ObservedObject var lang = LocalizationManager.shared
     @State private var commandInput: String = ""
+    @State private var showingDangerousCommandAlert: Bool = false
+    @State private var dangerousCommandWarning: String = ""
+    @State private var pendingCommand: String = ""
     
     var body: some View {
         VStack(spacing: 10) {
@@ -890,8 +930,15 @@ struct TerminalView: View {
                 
                 Button(lang.t("term_send")) {
                     if !commandInput.isEmpty {
-                        obd2Manager.sendCustomCommand(commandInput)
-                        commandInput = ""
+                        let check = OBD2Manager.isDangerousCommand(commandInput)
+                        if check.isDangerous {
+                            pendingCommand = commandInput
+                            dangerousCommandWarning = check.reason
+                            showingDangerousCommandAlert = true
+                        } else {
+                            obd2Manager.sendCustomCommand(commandInput)
+                            commandInput = ""
+                        }
                     }
                 }
                 .buttonStyle(BorderedProminentButtonStyle())
@@ -899,16 +946,105 @@ struct TerminalView: View {
             .padding(.horizontal)
             .padding(.bottom, 12)
         }
+        .alert("Comando Diagnostico Critico", isPresented: $showingDangerousCommandAlert) {
+            Button("Invia Comunque (Modalità Esperto)", role: .destructive) {
+                obd2Manager.sendCustomCommand(pendingCommand)
+                commandInput = ""
+                pendingCommand = ""
+            }
+            Button("Annulla", role: .cancel) {
+                pendingCommand = ""
+            }
+        } message: {
+            Text("Attenzione: il comando inserito interagisce con funzioni critiche (\(dangerousCommandWarning)). L'invio di sequenze errate potrebbe provocare errori permanenti o anomalie di funzionamento della centralina.")
+        }
     }
 }
 
 struct SettingsView: View {
     @ObservedObject var aiManager: AIManager
     @ObservedObject var lang = LocalizationManager.shared
+    @ObservedObject var storeManager = StoreManager.shared
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
+                // Sezione Licenza In-App Purchase (StoreKit 2)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Image(systemName: storeManager.isProUnlocked ? "crown.fill" : "lock.shield.fill")
+                            .foregroundColor(storeManager.isProUnlocked ? .yellow : .blue)
+                            .font(.title3)
+                        Text(storeManager.isProUnlocked ? "Licenza YaDiag Pro: ATTIVA" : "Versione YaDiag Free")
+                            .font(.headline)
+                            .bold()
+                        Spacer()
+                        if storeManager.isProUnlocked {
+                            Text("Lifetime")
+                                .font(.caption2)
+                                .bold()
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color.yellow.opacity(0.2))
+                                .foregroundColor(.orange)
+                                .cornerRadius(6)
+                        }
+                    }
+                    
+                    if storeManager.isProUnlocked {
+                        Text("Tutte le funzioni professionali (Test Pompa ABS, Reset Corpi Farfallati ISC, Reset Lambda O2 e Telemetria AI avanzata) sono attive su questo dispositivo.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Sblocca l'accesso illimitato a test idraulico pompa ABS, reset autoadattativi ISC e O2, diagnosi codici ABS avanzata e report AI.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                Task {
+                                    _ = await storeManager.purchasePro()
+                                }
+                            }) {
+                                HStack {
+                                    if storeManager.isPurchasing {
+                                        ProgressView().scaleEffect(0.8)
+                                    } else {
+                                        Image(systemName: "cart.fill")
+                                    }
+                                    Text("Acquista YaDiag Pro (29,99 €)")
+                                        .bold()
+                                }
+                                .font(.subheadline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.blue)
+                            .disabled(storeManager.isPurchasing)
+                            
+                            Button(action: {
+                                Task {
+                                    await storeManager.restorePurchases()
+                                }
+                            }) {
+                                Text("Ripristina")
+                                    .font(.subheadline)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                        
+                        if let err = storeManager.purchaseErrorMessage {
+                            Text(err)
+                                .font(.caption2)
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                .padding(14)
+                .background(storeManager.isProUnlocked ? Color.yellow.opacity(0.08) : Color.blue.opacity(0.08))
+                .cornerRadius(12)
+                
                 // Sezione 0: Selezione Lingua dell'Applicazione (Menu a Tendina)
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 10) {
@@ -1624,12 +1760,17 @@ struct InfoView: View {
                             
                             ForEach(cat.models, id: \.self) { model in
                                 HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
+                                    let isVerified = model.contains("Tracer 900") || model.contains("MT-09")
+                                    Image(systemName: isVerified ? "checkmark.seal.fill" : "checkmark.circle.fill")
+                                        .foregroundColor(isVerified ? .cyan : .green)
                                         .font(.caption)
                                     Text(model)
                                         .font(.caption)
                                         .bold()
+                                    Spacer()
+                                    Text(isVerified ? "✅ Verificato" : "🧪 Compatibile CAN")
+                                        .font(.system(size: 9))
+                                        .foregroundColor(isVerified ? .cyan : .secondary)
                                 }
                             }
                         }

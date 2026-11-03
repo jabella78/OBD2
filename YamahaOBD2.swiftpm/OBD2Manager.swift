@@ -56,6 +56,8 @@ class OBD2Manager: ObservableObject {
     @Published var isScanningABS: Bool = false
     @Published var isABSTestRunning: Bool = false
     @Published var absTestCountdown: Int = 0
+    @Published var isDemoMode: Bool = false
+    private var demoTimer: Timer? = nil
     private var absTestTimer: Timer? = nil
     private var telemetryTimer: Timer? = nil
     @Published var lastABSRawTrace: [String] = []
@@ -211,6 +213,79 @@ class OBD2Manager: ObservableObject {
             if self.isRecording {
                 self.recordTelemetry()
             }
+        }
+    }
+    
+    // MARK: - Modalità Demo / Simulazione per Apple Review e Test Offline
+    
+    func toggleDemoMode() {
+        isDemoMode.toggle()
+        if isDemoMode {
+            startDemoSimulation()
+        } else {
+            stopDemoSimulation()
+        }
+    }
+    
+    private func startDemoSimulation() {
+        demoTimer?.invalidate()
+        isPollingPaused = false
+        var step = 0
+        
+        demoTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            guard let self = self, self.isDemoMode else { return }
+            step += 1
+            
+            DispatchQueue.main.async {
+                let cycle = step % 60
+                if cycle < 15 {
+                    self.rpm = 1250 + (cycle * 30)
+                    self.speed = 0
+                    self.tps = 15
+                } else if cycle < 40 {
+                    self.rpm = 1700 + ((cycle - 15) * 180)
+                    self.speed = (cycle - 15) * 4
+                    self.tps = 20 + ((cycle - 15) * 2)
+                } else {
+                    self.rpm = max(1200, 6200 - ((cycle - 40) * 240))
+                    self.speed = max(0, 100 - ((cycle - 40) * 5))
+                    self.tps = 16
+                }
+                
+                self.temp = 88 + (step % 5)
+                self.iat = 28
+                self.map = 62 + (step % 12)
+                self.engineLoad = 18 + (step % 15)
+                self.timingAdvance = 12 + (step % 6)
+                self.o2Voltage = 0.45 + (Double(step % 10) * 0.04)
+                self.batteryVoltage = "13.8V"
+                
+                if self.isRecording {
+                    self.recordTelemetry()
+                }
+            }
+        }
+        
+        DispatchQueue.main.async {
+            self.dtcCodes = ["✅ Simulazione: Nessun errore attivo nella memoria ECU Motore (43 00)."]
+            self.absDtcCodes = ["🟢 Simulazione: Centralina ABS online (7EB). Nessun errore rilevato."]
+            self.iscLearningStatus = "Cil #1: 0x82F0 | Cil #2: 0x8435 | Cil #3: 0x8435\nStato: ✅ APPRESO REGOLARE"
+            self.o2LearningStatus = "Trim: 0x01FC / 0x0255 | Cicli: 0x000A\nStato: ✅ APPRESO REGOLARE"
+            self.coCylindersStatus = "Cil #1: 0x82 (+2) | Cil #2: 0x80 (0) | Cil #3: 0x81 (+1)"
+            self.throttleCleaningLevel = 1
+            self.throttleDirtPercentage = 18.5
+            self.throttleCleaningStatus = "🟢 CORPI FARFALLATI PULITI (Compensazione ISC: 18.5%). Nessuna pulizia necessaria."
+            self.terminalOutput.append(TerminalLine(text: "[DEMO] Modalità Simulazione Demo attivata."))
+        }
+    }
+    
+    private func stopDemoSimulation() {
+        demoTimer?.invalidate()
+        demoTimer = nil
+        DispatchQueue.main.async {
+            self.rpm = 0
+            self.speed = 0
+            self.terminalOutput.append(TerminalLine(text: "[DEMO] Modalità Simulazione disattivata."))
         }
     }
     
@@ -383,7 +458,7 @@ class OBD2Manager: ObservableObject {
                         self.absDtcCodes = [
                             "❌ Nessuna centralina ha risposto all'indirizzo CAN \(targetTx) (Filtro RX \(targetRx)).",
                             "Traccia risposte grezze: \(summary)",
-                            "💡 Seleziona l'indirizzo 7E3 (RX 7EB) che è l'indirizzo ufficiale rilevato sulla tua Tracer 900 GT."
+                            "💡 Seleziona l'indirizzo 7E3 (RX 7EB) che è l'indirizzo tipico del nodo ABS."
                         ]
                     }
                 }
@@ -495,150 +570,159 @@ class OBD2Manager: ObservableObject {
     
     // MARK: - Funzioni Attuatori e Reset Apprendimento (FI ECU Cod. 67/87 + Unità Idraulica ABS Cod. 01/02)
     
+    /// Verifica di sicurezza preliminare in tempo reale: interroga direttamente la centralina sui giri motore (010C) e velocità (010D)
+    /// prima di permettere qualsiasi comando attuatore o test idraulico ABS.
+    func verifyEngineSafetyBeforeActuator(completion: @escaping (Bool) -> Void) {
+        if isDemoMode {
+            completion(true)
+            return
+        }
+        
+        guard bleManager.isConnected else {
+            DispatchQueue.main.async {
+                self.actuatorStatusMessage = "❌ Errore: Adattatore non connesso."
+            }
+            completion(false)
+            return
+        }
+        
+        let checkWorkItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { completion(false); return }
+            if self.rpm > 0 {
+                DispatchQueue.main.async {
+                    self.actuatorStatusMessage = "❌ Blocco Sicurezza: Motore acceso (\(self.rpm) RPM). Spegnere il motore prima di procedere."
+                }
+                completion(false)
+            } else if self.speed > 0 {
+                DispatchQueue.main.async {
+                    self.actuatorStatusMessage = "❌ Blocco Sicurezza: Veicolo in movimento (\(self.speed) km/h)."
+                }
+                completion(false)
+            } else {
+                completion(true)
+            }
+        }
+        
+        self.bleManager.sendCommand("010C")
+        self.bleManager.sendCommand("010D")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: checkWorkItem)
+    }
+    
     func sendActuatorCommand(code: Int, isABSTest: Bool = false) {
         if isABSTest {
             startABSHydraulicTest(code: code)
             return
         }
         
-        guard rpm == 0 else {
-            DispatchQueue.main.async {
-                self.actuatorStatusMessage = "❌ Pericolo: Motore acceso (RPM > 0). Comando bloccato."
-            }
-            return
-        }
-        guard speed == 0 else {
-            DispatchQueue.main.async {
-                self.actuatorStatusMessage = "❌ Pericolo: Veicolo in movimento. Comando bloccato."
-            }
-            return
-        }
-        
-        isReadingErrors = true // Sospende il polling telemetria durante l'operazione
-        commandQueue.removeAll()
-        
-        DispatchQueue.main.async {
-            self.lastABSRawTrace.removeAll()
-            if code == 67 {
-                self.actuatorStatusMessage = "⏳ Esecuzione Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67 -> 3B 54 01)..."
-            } else if code == 87 {
-                self.actuatorStatusMessage = "⏳ Esecuzione Reset Apprendimento Sonda Lambda O2 (Cod. 87 -> 3B 52 01)..."
-            } else {
-                self.actuatorStatusMessage = "⏳ Invio comando (Cod. \(code)) alla centralina Motore (7E0)..."
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            self.isAwaitingResponse = false
-            // Comandi KWP2000 confermati su FI ECU (7E0 -> 7E8) in sessione 10 03
-            self.enqueueCommand("ATH1")
-            self.enqueueCommand("ATSH 7E0")
-            self.enqueueCommand("ATCRA 7E8")
-            self.enqueueCommand("ATFCSH 7E0")
-            self.enqueueCommand("ATFCSD 300000")
-            self.enqueueCommand("ATFCSM 1")
-            self.enqueueCommand("1003") // Entra in Extended Diagnostic Session (50 03)
+        verifyEngineSafetyBeforeActuator { [weak self] isSafe in
+            guard let self = self, isSafe else { return }
             
-            if code == 67 {
-                // Cod. 67: Reset Apprendimento Valvola ISC / Corpi Farfallati (Registro 0x54)
-                self.enqueueCommand("3B5401")
-                self.enqueueCommand("2154") // Rilettura immediata di verifica
-            } else if code == 87 {
-                // Cod. 87: Reset Apprendimento Sonda O2 (Registri 0x52 e 0x58)
-                self.enqueueCommand("3B5201")
-                self.enqueueCommand("3B5801")
-                self.enqueueCommand("2152") // Rilettura immediata di verifica
-                self.enqueueCommand("2158")
+            self.isReadingErrors = true
+            self.commandQueue.removeAll()
+            
+            DispatchQueue.main.async {
+                self.lastABSRawTrace.removeAll()
+                if code == 67 {
+                    self.actuatorStatusMessage = "⏳ Esecuzione Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67 -> 3B 54 01)..."
+                } else if code == 87 {
+                    self.actuatorStatusMessage = "⏳ Esecuzione Reset Apprendimento Sonda Lambda O2 (Cod. 87 -> 3B 52 01)..."
+                } else {
+                    self.actuatorStatusMessage = "⏳ Invio comando (Cod. \(code)) alla centralina Motore (7E0)..."
+                }
             }
             
-            self.enqueueCommand("1001") // Torna in Default Session per riabilitare i PID OBD2 01xx
-            self.enqueueCommand("ATFCSM 0")
-            self.enqueueCommand("ATCRA")
-            self.enqueueCommand("ATH0")
-            self.enqueueCommand("ATSH 7E0")
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
-            self.isReadingErrors = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                self.isAwaitingResponse = false
+                self.enqueueCommand("ATH1")
+                self.enqueueCommand("ATSH 7E0")
+                self.enqueueCommand("ATCRA 7E8")
+                self.enqueueCommand("ATFCSH 7E0")
+                self.enqueueCommand("ATFCSD 300000")
+                self.enqueueCommand("ATFCSM 1")
+                self.enqueueCommand("1003")
+                
+                if code == 67 {
+                    self.enqueueCommand("3B5401")
+                    self.enqueueCommand("2154")
+                } else if code == 87 {
+                    self.enqueueCommand("3B5201")
+                    self.enqueueCommand("3B5801")
+                    self.enqueueCommand("2152")
+                    self.enqueueCommand("2158")
+                }
+                
+                self.enqueueCommand("1001")
+                self.enqueueCommand("ATFCSM 0")
+                self.enqueueCommand("ATCRA")
+                self.enqueueCommand("ATH0")
+                self.enqueueCommand("ATSH 7E0")
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
+                self.isReadingErrors = false
+            }
         }
     }
     
     // MARK: - Procedura Dedicata Test Idraulico & Spurgo Pompa ABS (Manuale pag. 4-65/4-67)
     
     func startABSHydraulicTest(code: Int) {
-        guard rpm == 0 else {
-            DispatchQueue.main.async {
-                self.actuatorStatusMessage = "❌ Pericolo: Motore acceso (RPM > 0). Comando bloccato."
-            }
-            return
-        }
-        guard speed == 0 else {
-            DispatchQueue.main.async {
-                self.actuatorStatusMessage = "❌ Pericolo: Veicolo in movimento. Comando bloccato."
-            }
-            return
-        }
-        
-        // 1) Sospensione immediata del polling telemetria e svuotamento coda
-        isReadingErrors = true
-        isAwaitingResponse = true
-        commandQueue.removeAll()
-        buffer = ""
-        absTestTimer?.invalidate()
-        absTestTimer = nil
-        
-        let routineCode = String(format: "%02X", code) // "01" (Forza Reazione - Pompa) o "02" (Instradamento Tubi)
-        let targetTx = absCanHeader
-        let targetRx = rxAddress(for: targetTx)
-        
-        DispatchQueue.main.async {
-            self.lastABSRawTrace.removeAll()
-            self.isABSTestRunning = true
-            self.absTestCountdown = 14
-            self.actuatorStatusMessage = "⏳ PREPARAZIONE: Premi e tieni premuti con FORZA sia la LEVA freno che il PEDALE! Avvio sequenza in corso..."
-        }
-        
-        // 2) Pausa di 0.4s per drenare risposte UART residue
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-            guard let self = self, self.isABSTestRunning else { return }
+        verifyEngineSafetyBeforeActuator { [weak self] isSafe in
+            guard let self = self, isSafe else { return }
+            
+            self.isReadingErrors = true
+            self.isAwaitingResponse = true
+            self.commandQueue.removeAll()
             self.buffer = ""
-            self.isAwaitingResponse = false
+            self.absTestTimer?.invalidate()
+            self.absTestTimer = nil
             
-            // Step 1: Configurazione filtri CAN su ABS (7E3 -> 7EB) ed Echo OFF
-            self.enqueueCommand("ATE0")
-            self.enqueueCommand("ATH1")
-            self.enqueueCommand("ATSH \(targetTx)")
-            self.enqueueCommand("ATCRA \(targetRx)")
+            let routineCode = String(format: "%02X", code)
+            let targetTx = self.absCanHeader
+            let targetRx = self.rxAddress(for: targetTx)
             
-            // Step 2: Ingresso in sessione estesa 10 03 dopo 0.35s
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            DispatchQueue.main.async {
+                self.lastABSRawTrace.removeAll()
+                self.isABSTestRunning = true
+                self.absTestCountdown = 14
+                self.actuatorStatusMessage = "⏳ PREPARAZIONE: Premi e tieni premuti con FORZA sia la LEVA freno che il PEDALE! Avvio sequenza in corso..."
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
                 guard let self = self, self.isABSTestRunning else { return }
-                self.enqueueCommand("1003")
+                self.buffer = ""
+                self.isAwaitingResponse = false
                 
-                // Step 3: Invio Routine 0x70 dopo 0.4s
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+                self.enqueueCommand("ATE0")
+                self.enqueueCommand("ATH1")
+                self.enqueueCommand("ATSH \(targetTx)")
+                self.enqueueCommand("ATCRA \(targetRx)")
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
                     guard let self = self, self.isABSTestRunning else { return }
-                    self.enqueueCommand("3170\(routineCode)")
+                    self.enqueueCommand("1003")
                     
-                    // Step 4: Timer di ciclo (14s) con keep-alive 3E00 ogni 2s per non interrompere la sequenza della centralina
-                    self.absTestTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-                        guard let self = self else {
-                            timer.invalidate()
-                            return
-                        }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+                        guard let self = self, self.isABSTestRunning else { return }
+                        self.enqueueCommand("3170\(routineCode)")
                         
-                        DispatchQueue.main.async {
-                            if self.absTestCountdown > 1 {
-                                self.absTestCountdown -= 1
-                                
-                                // Mantiene viva la sessione 10 03 senza resettare la routine in volo
-                                if self.absTestCountdown % 2 == 0 {
-                                    self.enqueueCommand("3E00")
-                                }
-                            } else {
+                        self.absTestTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+                            guard let self = self else {
                                 timer.invalidate()
-                                self.absTestTimer = nil
-                                self.stopABSHydraulicTest(completedSuccessfully: true)
+                                return
+                            }
+                            
+                            DispatchQueue.main.async {
+                                if self.absTestCountdown > 1 {
+                                    self.absTestCountdown -= 1
+                                    if self.absTestCountdown % 2 == 0 {
+                                        self.enqueueCommand("3E00")
+                                    }
+                                } else {
+                                    timer.invalidate()
+                                    self.absTestTimer = nil
+                                    self.stopABSHydraulicTest(completedSuccessfully: true)
+                                }
                             }
                         }
                     }
@@ -715,6 +799,18 @@ class OBD2Manager: ObservableObject {
         }
     }
     
+    static func isDangerousCommand(_ cmd: String) -> (isDangerous: Bool, reason: String) {
+        let clean = cmd.replacingOccurrences(of: " ", with: "").uppercased()
+        if clean.hasPrefix("2E") {
+            return (true, "Scrittura parametri EEPROM (Service 0x2E)")
+        } else if clean.hasPrefix("34") || clean.hasPrefix("35") || clean.hasPrefix("36") || clean.hasPrefix("37") {
+            return (true, "Riprogrammazione memoria flash ECU (Service 0x34..0x37)")
+        } else if clean.hasPrefix("1101") {
+            return (true, "Hard Reset immediato della centralina (Service 0x11)")
+        }
+        return (false, "")
+    }
+    
     func sendCustomCommand(_ cmd: String) {
         enqueueCommand(cmd)
     }
@@ -788,17 +884,20 @@ class OBD2Manager: ObservableObject {
         let line = text + "\n"
         guard let data = line.data(using: .utf8) else { return }
         
-        // 1) Scrive nella cartella Documenti dell'App (iOS e macOS)
         if let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             let docFileURL = documentsDir.appendingPathComponent("obd2_log.txt")
+            rotateLogIfNeeded(docFileURL)
             appendData(data, to: docFileURL)
         }
-        
-        // 2) Su Mac scrive anche direttamente nella cartella del progetto per il monitoraggio in tempo reale
-        #if os(macOS)
-        let workspaceLogURL = URL(fileURLWithPath: "/Users/jabella78/Documents/OBD2/obd2_log.txt")
-        appendData(data, to: workspaceLogURL)
-        #endif
+    }
+    
+    private func rotateLogIfNeeded(_ fileURL: URL) {
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
+           let size = attrs[.size] as? UInt64, size > 2 * 1024 * 1024 {
+            let backupURL = fileURL.deletingPathExtension().appendingPathExtension("prev.txt")
+            try? FileManager.default.removeItem(at: backupURL)
+            try? FileManager.default.moveItem(at: fileURL, to: backupURL)
+        }
     }
     
     private func appendData(_ data: Data, to fileURL: URL) {
@@ -978,6 +1077,16 @@ class OBD2Manager: ObservableObject {
         }
     }
     
+    private func decodeDTCFromBytes(_ b1Hex: String, _ b2Hex: String) -> String {
+        guard let b1 = UInt8(b1Hex, radix: 16) else { return "P\(b1Hex)\(b2Hex)" }
+        let prefixType = (b1 & 0xC0) >> 6
+        let prefixes = ["P", "C", "B", "U"]
+        let prefix = prefixType < prefixes.count ? prefixes[Int(prefixType)] : "P"
+        let firstDigit = (b1 & 0x30) >> 4
+        let secondDigit = b1 & 0x0F
+        return String(format: "%@%X%X%@", prefix, firstDigit, secondDigit, b2Hex)
+    }
+    
     private func parseEngineDTC(_ hexStr: String) {
         if hexStr.hasPrefix("4300") || hexStr == "43" {
             DispatchQueue.main.async {
@@ -988,24 +1097,56 @@ class OBD2Manager: ObservableObject {
                     self.dtcCodes.append("✅ La centralina Motore (FI ECU 7E8) ha risposto: Nessun errore in memoria (43 00).")
                 }
             }
-        } else {
-            let codeHex = String(hexStr.dropFirst(2))
-            var dtc = "Errore rilevato: " + hexStr
-            if codeHex.count >= 4 {
-                let pCode = "P" + codeHex.prefix(4)
-                if let desc = dtcDatabase[pCode] {
-                    dtc = "Errore \(pCode): \(desc)"
-                } else {
-                    dtc = "Errore: \(pCode) (Non presente nel database offline)"
+            return
+        }
+        
+        let payload = String(hexStr.dropFirst(2)) // Rimuove '43'
+        guard !payload.isEmpty else { return }
+        
+        var decodedCodes: [String] = []
+        
+        // Nel protocollo ISO 15765-4 (CAN):
+        // Se payload ha un byte conteggio: es. '01 01 35' (len 6) o '02 01 35 02 01' (len 10)
+        if payload.count >= 6 && (payload.count - 2) % 4 == 0 {
+            let dtcHex = String(payload.dropFirst(2))
+            var idx = dtcHex.startIndex
+            while idx < dtcHex.endIndex {
+                guard let next4 = dtcHex.index(idx, offsetBy: 4, limitedBy: dtcHex.endIndex) else { break }
+                let chunk = String(dtcHex[idx..<next4])
+                if chunk != "0000" {
+                    let b1 = String(chunk.prefix(2))
+                    let b2 = String(chunk.dropFirst(2))
+                    let pCode = decodeDTCFromBytes(b1, b2)
+                    let desc = dtcDatabase[pCode] ?? "Guasto non presente nel DB offline"
+                    decodedCodes.append("Errore \(pCode): \(desc)")
                 }
+                idx = next4
             }
-            let finalDtc = dtc
-            DispatchQueue.main.async {
-                if self.dtcCodes.first?.contains("Lettura") == true {
-                    self.dtcCodes = []
+        } else if payload.count % 4 == 0 {
+            var idx = payload.startIndex
+            while idx < payload.endIndex {
+                guard let next4 = payload.index(idx, offsetBy: 4, limitedBy: payload.endIndex) else { break }
+                let chunk = String(payload[idx..<next4])
+                if chunk != "0000" {
+                    let b1 = String(chunk.prefix(2))
+                    let b2 = String(chunk.dropFirst(2))
+                    let pCode = decodeDTCFromBytes(b1, b2)
+                    let desc = dtcDatabase[pCode] ?? "Guasto non presente nel DB offline"
+                    decodedCodes.append("Errore \(pCode): \(desc)")
                 }
-                if !self.dtcCodes.contains(finalDtc) {
-                    self.dtcCodes.append(finalDtc)
+                idx = next4
+            }
+        } else {
+            decodedCodes.append("Errore grezzo rilevato: \(hexStr)")
+        }
+        
+        DispatchQueue.main.async {
+            if self.dtcCodes.first?.contains("Lettura") == true {
+                self.dtcCodes = []
+            }
+            for code in decodedCodes {
+                if !self.dtcCodes.contains(code) {
+                    self.dtcCodes.append(code)
                 }
             }
         }
@@ -1231,7 +1372,7 @@ class OBD2Manager: ObservableObject {
             case "52":
                 // Apprendimento Sonda Lambda O2 (Cod. 87)
                 // Originale pre-reset: 0002 01FC 0255 000A | Valore azzerato: 0001 0200 0200 0001
-                let b1 = String(dataHex.prefix(4))
+                let _ = String(dataHex.prefix(4))
                 let trim1 = String(dataHex.dropFirst(4).prefix(4))
                 let trim2 = String(dataHex.dropFirst(8).prefix(4))
                 let count = String(dataHex.dropFirst(12).prefix(4))

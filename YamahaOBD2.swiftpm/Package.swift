@@ -17,26 +17,24 @@ let package = Package(
         .iOSApplication(
             name: "YaDiag",
             targets: ["AppModule"],
-            bundleIdentifier: "com.jabella78.YamahaOBD2",
+            bundleIdentifier: "com.jabella78.yadiag",
             teamIdentifier: "D4D9CCU3X7",
             displayVersion: "1.0.2",
-            bundleVersion: "261103.074748",
+            bundleVersion: "261103.082211",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
             supportedDeviceFamilies: [
-                .pad,
                 .phone
             ],
             supportedInterfaceOrientations: [
                 .portrait,
                 .landscapeRight,
-                .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+                .landscapeLeft
             ],
             capabilities: [
                 .bluetoothAlways(purposeString: "L'app necessita del Bluetooth per collegarsi all'adattatore OBD2 della tua moto.")
             ],
-            appCategory: .sports
+            appCategory: .utilities
         )
     ],
     targets: [
