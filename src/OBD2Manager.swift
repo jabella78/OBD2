@@ -373,8 +373,9 @@ class OBD2Manager: ObservableObject {
             self.isReadingErrors = false
             DispatchQueue.main.async {
                 if self.dtcCodes.first?.contains("Lettura centralina motore") == true {
-                    self.dtcCodes = ["Nessuna risposta dalla FI ECU (Verifica che il quadro moto sia su ON e l'UniCarScan connesso)."]
+                    self.dtcCodes = ["Nessuna risposta dalla FI ECU (Verifica che il quadro moto sia su ON e l'adattatore connesso)."]
                 }
+                self.sendAnonymousTelemetryReport()
             }
         }
     }
@@ -462,6 +463,7 @@ class OBD2Manager: ObservableObject {
                         ]
                     }
                 }
+                self.sendAnonymousTelemetryReport()
             }
         }
     }
@@ -844,6 +846,33 @@ class OBD2Manager: ObservableObject {
             return String(text[index...]).trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return text
+    }
+    
+    // MARK: - Invio Telemetria Anonima di Compatibilità a Supabase
+    
+    func sendAnonymousTelemetryReport() {
+        guard !isDemoMode else { return }
+        guard bleManager.isConnected, let peripheralName = bleManager.connectedPeripheral?.name, !peripheralName.isEmpty else { return }
+        
+        var canNodes: [String] = []
+        if !dtcCodes.isEmpty && !dtcCodes.first!.contains("Nessuna risposta") {
+            canNodes.append("7E0/7E8")
+        }
+        if !absDtcCodes.isEmpty && !absDtcCodes.first!.contains("Nessuna risposta") {
+            canNodes.append(absCanHeader)
+        }
+        
+        TelemetryService.shared.sendCompatibilityTelemetry(
+            adapterName: peripheralName,
+            isCertified: BLEManager.isCertifiedAdapter(name: peripheralName),
+            canHeaders: canNodes,
+            engineDTCs: dtcCodes.filter { $0.hasPrefix("Errore") },
+            absDTCs: absDtcCodes.filter { $0.contains("Codice ABS") },
+            iscStatus: iscLearningStatus,
+            o2Status: o2LearningStatus,
+            dirtLevel: throttleCleaningLevel,
+            dirtPct: throttleDirtPercentage
+        )
     }
     
     private func processIncomingData(_ data: String) {

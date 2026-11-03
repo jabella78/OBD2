@@ -23,10 +23,8 @@ public struct DiagnosticTelemetryReport: Codable {
 public class TelemetryService {
     public static let shared = TelemetryService()
     
-    // Inserire qui l'endpoint Supabase o Cloudflare Worker / Firebase
-    // Se lasciato vuoto o non configurato, il report viene generato ed archiviato localmente senza errori
-    public var cloudIngestURLString: String = "https://YOUR_PROJECT_ID.supabase.co/rest/v1/telemetry_reports"
-    public var apiKey: String = "YOUR_ANON_PUBLIC_KEY"
+    public var cloudIngestURLString: String = "https://dtucjtuhgtcrkkjjfvcr.supabase.co/rest/v1/telemetry_reports"
+    public var apiKey: String = "sb_publishable_BefsC-26ZRHndn105jFIKw_g4U-e7t0"
     
     private init() {}
     
