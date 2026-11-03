@@ -54,18 +54,29 @@ class OBD2Manager: ObservableObject {
     @Published var isRecording: Bool = false
     @Published var isPollingPaused: Bool = true // In pausa di default all'avvio: si attiva a richiesta dalla Dashboard per non saturare il terminale
     @Published var isScanningABS: Bool = false
-    @Published var isABSTestRunning: Bool = false
-    @Published var absTestCountdown: Int = 0
     @Published var isDemoMode: Bool = false
     private var demoTimer: Timer? = nil
-    private var absTestTimer: Timer? = nil
     private var telemetryTimer: Timer? = nil
+    func localizedMsg(en: String, it: String, fr: String? = nil, es: String? = nil, de: String? = nil) -> String {
+        switch LocalizationManager.shared.currentLanguage {
+        case .italian: return it
+        case .french: return fr ?? en
+        case .spanish: return es ?? en
+        case .german: return de ?? en
+        case .english: return en
+        }
+    }
+    
+    var isLangIT: Bool {
+        return LocalizationManager.shared.currentLanguage == .italian
+    }
+    
     @Published var lastABSRawTrace: [String] = []
-    @Published var actuatorStatusMessage: String = "Pronto. Seleziona un componente per avviare il test."
-    @Published var iscLearningStatus: String = "Non ancora verificato"
-    @Published var o2LearningStatus: String = "Non ancora verificato"
-    @Published var coCylindersStatus: String = "Non ancora verificato"
-    @Published var throttleCleaningStatus: String = "Premi 'Verifica Valori' per analizzare l'apertura adattiva ISC"
+    @Published var actuatorStatusMessage: String = "Ready."
+    @Published var iscLearningStatus: String = "--"
+    @Published var o2LearningStatus: String = "--"
+    @Published var coCylindersStatus: String = "--"
+    @Published var throttleCleaningStatus: String = "--"
     @Published var throttleDirtPercentage: Double = 0.0
     @Published var throttleCleaningLevel: Int = 0 // 0 = N/D, 1 = OK (Verde), 2 = Depositi Medi (Giallo), 3 = Pulizia Necessaria (Rosso)
     private var coCyl1: String = "--"
@@ -121,10 +132,18 @@ class OBD2Manager: ObservableObject {
     
     func lookupABSCode(_ codeNumber: String) -> String {
         let key = "ABS_\(codeNumber)"
+        let absLabel = self.localizedMsg(en: "ABS Code", it: "Codice ABS", fr: "Code ABS", es: "Código ABS", de: "ABS-Code")
         if let desc = dtcDatabase[key] {
-            return "Codice ABS \(codeNumber): \(desc)"
+            return "\(absLabel) \(codeNumber): \(desc)"
         }
-        return "Codice ABS \(codeNumber): Anomalia rilevata (consultare tabella ABS pag. 8-128 del manuale)."
+        let fallback = self.localizedMsg(
+            en: "Fault detected (refer to ABS chart page 8-128 of service manual).",
+            it: "Anomalia rilevata (consultare tabella ABS pag. 8-128 del manuale).",
+            fr: "Anomalie détectée (consultez le tableau ABS page 8-128 du manuel d'atelier).",
+            es: "Anomalía detectada (consulte la tabla ABS pág. 8-128 del manual de taller).",
+            de: "Störung erkannt (siehe ABS-Tabelle Seite 8-128 des Werkstatthandbuchs)."
+        )
+        return "\(absLabel) \(codeNumber): \(fallback)"
     }
     
     func startInitialization() {
@@ -195,7 +214,6 @@ class OBD2Manager: ObservableObject {
                   !self.isInitializing,
                   !self.isReadingErrors,
                   !self.isProbingABS,
-                  !self.isABSTestRunning,
                   !self.isPollingPaused else { return }
             guard self.commandQueue.isEmpty else { return } // Evita lag infinito
             
@@ -418,13 +436,25 @@ class OBD2Manager: ObservableObject {
             return
         }
         commandQueue.removeAll()
-        self.dtcCodes = ["Cancellazione errori FI ECU in corso..."]
+        self.dtcCodes = [self.localizedMsg(
+            en: "Clearing FI ECU fault memory...",
+            it: "Cancellazione errori FI ECU in corso...",
+            fr: "Effacement mémoire défauts FI ECU...",
+            es: "Borrando memoria de averías FI ECU...",
+            de: "Löschen des FI ECU-Fehlerspeichers..."
+        )]
         enqueueCommand("ATSH 7E0")
         enqueueCommand("ATCRA 7E8")
-        enqueueCommand("04")
+        enqueueCommand(SecurityVault.shared.getClearEngineCommand())
         enqueueCommand("ATCRA")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            self.dtcCodes = ["Comando cancellazione errori FI ECU inviato (Mode 04)."]
+            self.dtcCodes = [self.localizedMsg(
+                en: "FI ECU fault clearing command sent (Mode 04).",
+                it: "Comando cancellazione errori FI ECU inviato (Mode 04).",
+                fr: "Commande d'effacement FI ECU envoyée (Mode 04).",
+                es: "Comando de borrado FI ECU enviado (Mode 04).",
+                de: "Befehl zum Löschen des FI ECU-Fehlerspeichers gesendet (Mode 04)."
+            )]
         }
     }
     
@@ -433,7 +463,13 @@ class OBD2Manager: ObservableObject {
     func readABSErrors() {
         guard bleManager.isConnected else {
             DispatchQueue.main.async {
-                self.absDtcCodes = ["❌ ERRORE: Adattatore UniCarScan NON connesso via Bluetooth! Vai nel tab Bluetooth e connettiti prima di interrogare l'ABS."]
+                self.absDtcCodes = [self.localizedMsg(
+                    en: "❌ ERROR: OBD2 adapter NOT connected via Bluetooth! Go to the Bluetooth tab and connect first.",
+                    it: "❌ ERRORE: Adattatore UniCarScan NON connesso via Bluetooth! Vai nel tab Bluetooth e connettiti prima di interrogare l'ABS.",
+                    fr: "❌ ERREUR : Adaptateur NON connecté via Bluetooth ! Connectez-vous d'abord dans l'onglet Bluetooth.",
+                    es: "❌ ERROR: ¡Adaptador NO conectado por Bluetooth! Conéctate primero en la pestaña Bluetooth.",
+                    de: "❌ FEHLER: Adapter NICHT über Bluetooth verbunden! Zuerst im Bluetooth-Tab verbinden."
+                )]
             }
             return
         }
@@ -503,7 +539,13 @@ class OBD2Manager: ObservableObject {
     func clearABSErrors() {
         guard bleManager.isConnected else {
             DispatchQueue.main.async {
-                self.absDtcCodes = ["❌ ERRORE: Adattatore UniCarScan NON connesso via Bluetooth!"]
+                self.absDtcCodes = [self.localizedMsg(
+                    en: "❌ ERROR: OBD2 adapter NOT connected via Bluetooth!",
+                    it: "❌ ERRORE: Adattatore UniCarScan NON connesso via Bluetooth!",
+                    fr: "❌ ERREUR : Adaptateur NON connecté via Bluetooth !",
+                    es: "❌ ERROR: ¡Adaptador NO conectado por Bluetooth!",
+                    de: "❌ FEHLER: Adapter NICHT über Bluetooth verbunden!"
+                )]
             }
             return
         }
@@ -524,12 +566,12 @@ class OBD2Manager: ObservableObject {
             self.enqueueCommand("ATH1")
             self.enqueueCommand("ATSH \(targetTx)")
             self.enqueueCommand("ATCRA \(targetRx)")
-            self.enqueueCommand("1003")     // Sessione diagnostica estesa (risponde 7EB 02 50 03)
-            self.enqueueCommand("14FFFFFF") // Clear Diagnostic Information (risponde 7EB 04 54 FF FF FF)
+            self.enqueueCommand(SecurityVault.shared.getExtendedSessionCommand()) // Sessione diagnostica estesa
+            self.enqueueCommand(SecurityVault.shared.getClearABSCommand())         // Clear Diagnostic Information
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
                 guard let self = self else { return }
-                self.enqueueCommand("1001")
+                self.enqueueCommand(SecurityVault.shared.getDefaultSessionCommand())
                 self.enqueueCommand("ATCRA")
                 self.enqueueCommand("ATH0")
                 self.enqueueCommand("ATSH 7E0")
@@ -552,7 +594,13 @@ class OBD2Manager: ObservableObject {
     func scanABSAddresses() {
         guard bleManager.isConnected else {
             DispatchQueue.main.async {
-                self.absDtcCodes = ["❌ ERRORE: Adattatore UniCarScan NON connesso via Bluetooth! Connettiti prima di avviare l'Auto-Scan."]
+                self.absDtcCodes = [self.localizedMsg(
+                    en: "❌ ERROR: OBD2 adapter NOT connected via Bluetooth! Connect before starting Auto-Scan.",
+                    it: "❌ ERRORE: Adattatore UniCarScan NON connesso via Bluetooth! Connettiti prima di avviare l'Auto-Scan.",
+                    fr: "❌ ERREUR : Adaptateur NON connecté via Bluetooth ! Connectez-vous avant de lancer l'Auto-Scan.",
+                    es: "❌ ERROR: ¡Adaptador NO conectado por Bluetooth! Conéctate antes de iniciar el Auto-Scan.",
+                    de: "❌ FEHLER: Adapter NICHT über Bluetooth verbunden! Vor dem Auto-Scan verbinden."
+                )]
             }
             return
         }
@@ -614,7 +662,13 @@ class OBD2Manager: ObservableObject {
         
         guard bleManager.isConnected else {
             DispatchQueue.main.async {
-                self.actuatorStatusMessage = "❌ Errore: Adattatore non connesso."
+                self.actuatorStatusMessage = self.localizedMsg(
+                    en: "❌ Error: Adapter not connected.",
+                    it: "❌ Errore: Adattatore non connesso.",
+                    fr: "❌ Erreur : Adaptateur non connecté.",
+                    es: "❌ Error: Adaptador no conectado.",
+                    de: "❌ Fehler: Adapter nicht verbunden."
+                )
             }
             completion(false)
             return
@@ -624,12 +678,24 @@ class OBD2Manager: ObservableObject {
             guard let self = self else { completion(false); return }
             if self.rpm > 0 {
                 DispatchQueue.main.async {
-                    self.actuatorStatusMessage = "❌ Blocco Sicurezza: Motore acceso (\(self.rpm) RPM). Spegnere il motore prima di procedere."
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "❌ Safety Lock: Engine running (\(self.rpm) RPM). Turn off engine before proceeding.",
+                        it: "❌ Blocco Sicurezza: Motore acceso (\(self.rpm) RPM). Spegnere il motore prima di procedere.",
+                        fr: "❌ Sécurité : Moteur allumé (\(self.rpm) RPM). Coupez le moteur avant de continuer.",
+                        es: "❌ Bloqueo de Seguridad: Motor encendido (\(self.rpm) RPM). Apaga el motor antes de continuar.",
+                        de: "❌ Sicherheitsblockierung: Motor läuft (\(self.rpm) U/min). Vor dem Fortfahren Motor ausschalten."
+                    )
                 }
                 completion(false)
             } else if self.speed > 0 {
                 DispatchQueue.main.async {
-                    self.actuatorStatusMessage = "❌ Blocco Sicurezza: Veicolo in movimento (\(self.speed) km/h)."
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "❌ Safety Lock: Vehicle in motion (\(self.speed) km/h).",
+                        it: "❌ Blocco Sicurezza: Veicolo in movimento (\(self.speed) km/h).",
+                        fr: "❌ Sécurité : Véhicule en mouvement (\(self.speed) km/h).",
+                        es: "❌ Bloqueo de Seguridad: Vehículo en movimiento (\(self.speed) km/h).",
+                        de: "❌ Sicherheitsblockierung: Fahrzeug in Bewegung (\(self.speed) km/h)."
+                    )
                 }
                 completion(false)
             } else {
@@ -642,12 +708,7 @@ class OBD2Manager: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: checkWorkItem)
     }
     
-    func sendActuatorCommand(code: Int, isABSTest: Bool = false) {
-        if isABSTest {
-            startABSHydraulicTest(code: code)
-            return
-        }
-        
+    func sendActuatorCommand(code: Int) {
         verifyEngineSafetyBeforeActuator { [weak self] isSafe in
             guard let self = self, isSafe else { return }
             
@@ -657,11 +718,29 @@ class OBD2Manager: ObservableObject {
             DispatchQueue.main.async {
                 self.lastABSRawTrace.removeAll()
                 if code == 67 {
-                    self.actuatorStatusMessage = "⏳ Esecuzione Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67 -> 3B 54 01)..."
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "⏳ Executing Throttle Body / ISC Idle Learning Reset (Code 67 -> 3B 54 01)...",
+                        it: "⏳ Esecuzione Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67 -> 3B 54 01)...",
+                        fr: "⏳ Exécution Réinitialisation Ralenti ISC (Code 67 -> 3B 54 01)...",
+                        es: "⏳ Ejecutando Reinicio Aprendizaje Ralentí ISC (Cód. 67 -> 3B 54 01)...",
+                        de: "⏳ Ausführung Drosselklappen- / ISC-Leerlaufreset (Code 67 -> 3B 54 01)..."
+                    )
                 } else if code == 87 {
-                    self.actuatorStatusMessage = "⏳ Esecuzione Reset Apprendimento Sonda Lambda O2 (Cod. 87 -> 3B 52 01)..."
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "⏳ Executing O2 Lambda Fuel Trim Reset (Code 87 -> 3B 52 01)...",
+                        it: "⏳ Esecuzione Reset Apprendimento Sonda Lambda O2 (Cod. 87 -> 3B 52 01)...",
+                        fr: "⏳ Exécution Réinitialisation Trim Lambda O2 (Code 87 -> 3B 52 01)...",
+                        es: "⏳ Ejecutando Reinicio Trim Sonda Lambda O2 (Cód. 87 -> 3B 52 01)...",
+                        de: "⏳ Ausführung Lambdasonden-Gemischadaptions-Reset (Code 87 -> 3B 52 01)..."
+                    )
                 } else {
-                    self.actuatorStatusMessage = "⏳ Invio comando (Cod. \(code)) alla centralina Motore (7E0)..."
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "⏳ Sending command (Code \(code)) to Engine ECU (7E0)...",
+                        it: "⏳ Invio comando (Cod. \(code)) alla centralina Motore (7E0)...",
+                        fr: "⏳ Envoi commande (Code \(code)) au calculateur Moteur (7E0)...",
+                        es: "⏳ Enviando comando (Cód. \(code)) a la ECU Motor (7E0)...",
+                        de: "⏳ Befehl (Code \(code)) an Motorsteuergerät (7E0) senden..."
+                    )
                 }
             }
             
@@ -673,19 +752,19 @@ class OBD2Manager: ObservableObject {
                 self.enqueueCommand("ATFCSH 7E0")
                 self.enqueueCommand("ATFCSD 300000")
                 self.enqueueCommand("ATFCSM 1")
-                self.enqueueCommand("1003")
+                self.enqueueCommand(SecurityVault.shared.getExtendedSessionCommand())
                 
                 if code == 67 {
-                    self.enqueueCommand("3B5401")
+                    self.enqueueCommand(SecurityVault.shared.getResetISCCommand())
                     self.enqueueCommand("2154")
                 } else if code == 87 {
-                    self.enqueueCommand("3B5201")
+                    self.enqueueCommand(SecurityVault.shared.getResetO2Command())
                     self.enqueueCommand("3B5801")
                     self.enqueueCommand("2152")
                     self.enqueueCommand("2158")
                 }
                 
-                self.enqueueCommand("1001")
+                self.enqueueCommand(SecurityVault.shared.getDefaultSessionCommand())
                 self.enqueueCommand("ATFCSM 0")
                 self.enqueueCommand("ATCRA")
                 self.enqueueCommand("ATH0")
@@ -698,98 +777,6 @@ class OBD2Manager: ObservableObject {
         }
     }
     
-    // MARK: - Procedura Dedicata Test Idraulico & Spurgo Pompa ABS (Manuale pag. 4-65/4-67)
-    
-    func startABSHydraulicTest(code: Int) {
-        verifyEngineSafetyBeforeActuator { [weak self] isSafe in
-            guard let self = self, isSafe else { return }
-            
-            self.isReadingErrors = true
-            self.isAwaitingResponse = true
-            self.commandQueue.removeAll()
-            self.buffer = ""
-            self.absTestTimer?.invalidate()
-            self.absTestTimer = nil
-            
-            let routineCode = String(format: "%02X", code)
-            let targetTx = self.absCanHeader
-            let targetRx = self.rxAddress(for: targetTx)
-            
-            DispatchQueue.main.async {
-                self.lastABSRawTrace.removeAll()
-                self.isABSTestRunning = true
-                self.absTestCountdown = 14
-                self.actuatorStatusMessage = "⏳ PREPARAZIONE: Premi e tieni premuti con FORZA sia la LEVA freno che il PEDALE! Avvio sequenza in corso..."
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-                guard let self = self, self.isABSTestRunning else { return }
-                self.buffer = ""
-                self.isAwaitingResponse = false
-                
-                self.enqueueCommand("ATE0")
-                self.enqueueCommand("ATH1")
-                self.enqueueCommand("ATSH \(targetTx)")
-                self.enqueueCommand("ATCRA \(targetRx)")
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-                    guard let self = self, self.isABSTestRunning else { return }
-                    self.enqueueCommand("1003")
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-                        guard let self = self, self.isABSTestRunning else { return }
-                        self.enqueueCommand("3170\(routineCode)")
-                        
-                        self.absTestTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-                            guard let self = self else {
-                                timer.invalidate()
-                                return
-                            }
-                            
-                            DispatchQueue.main.async {
-                                if self.absTestCountdown > 1 {
-                                    self.absTestCountdown -= 1
-                                    if self.absTestCountdown % 2 == 0 {
-                                        self.enqueueCommand("3E00")
-                                    }
-                                } else {
-                                    timer.invalidate()
-                                    self.absTestTimer = nil
-                                    self.stopABSHydraulicTest(completedSuccessfully: true)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func stopABSHydraulicTest(completedSuccessfully: Bool = false) {
-        absTestTimer?.invalidate()
-        absTestTimer = nil
-        
-        DispatchQueue.main.async {
-            self.isABSTestRunning = false
-            self.absTestCountdown = 0
-            if completedSuccessfully {
-                self.actuatorStatusMessage = "✅ Test ABS terminato! Se hai percepito le pulsazioni idrauliche (Leva Ant. ➔ Pedale Post. ➔ Leva Ant.), pompa e valvole ABS sono perfettamente funzionanti."
-            } else {
-                self.actuatorStatusMessage = "⏹️ Test Pompa ABS interrotto."
-            }
-        }
-        
-        // Chiusura sessione estesa e ripristino intestazioni CAN per centralina motore
-        self.enqueueCommand("1001")
-        self.enqueueCommand("ATCRA")
-        self.enqueueCommand("ATH0")
-        self.enqueueCommand("ATSH 7E0")
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.isReadingErrors = false
-        }
-    }
-    
     // MARK: - Verifica Valori Apprendimento Minimo (ISC Cod. 67), Sonda O2 (Cod. 87) e CO Cilindri (0x40..0x42)
     
     func verifyISCAndO2Values() {
@@ -797,10 +784,16 @@ class OBD2Manager: ObservableObject {
         commandQueue.removeAll()
         
         DispatchQueue.main.async {
-            self.actuatorStatusMessage = "🔍 Lettura parametri ISC (Minimo), Sonda O2 e CO dalla centralina Motore (7E8)..."
-            self.iscLearningStatus = "Lettura in corso..."
-            self.o2LearningStatus = "Lettura in corso..."
-            self.coCylindersStatus = "Lettura in corso..."
+            self.actuatorStatusMessage = self.localizedMsg(
+                en: "🔍 Reading ISC Idle, O2 and CO parameters from Engine ECU (7E8)...",
+                it: "🔍 Lettura parametri ISC (Minimo), Sonda O2 e CO dalla centralina Motore (7E8)...",
+                fr: "🔍 Lecture paramètres ISC, Sonde O2 et CO du calculateur Moteur (7E8)...",
+                es: "🔍 Leyendo parámetros ISC, Sonda O2 y CO de la ECU Motor (7E8)...",
+                de: "🔍 Auslesen von ISC-, Lambda- und CO-Parametern aus Motor-ECU (7E8)..."
+            )
+            self.iscLearningStatus = self.localizedMsg(en: "Reading in progress...", it: "Lettura in corso...", fr: "Lecture en cours...", es: "Lectura en curso...", de: "Lesevorgang läuft...")
+            self.o2LearningStatus = self.localizedMsg(en: "Reading in progress...", it: "Lettura in corso...", fr: "Lecture en cours...", es: "Lectura en curso...", de: "Lesevorgang läuft...")
+            self.coCylindersStatus = self.localizedMsg(en: "Reading in progress...", it: "Lettura in corso...", fr: "Lecture en cours...", es: "Lectura en curso...", de: "Lesevorgang läuft...")
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -828,7 +821,13 @@ class OBD2Manager: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
             self.isReadingErrors = false
             DispatchQueue.main.async {
-                self.actuatorStatusMessage = "✅ Verifica parametri ISC, Sonda O2 e CO completata."
+                self.actuatorStatusMessage = self.localizedMsg(
+                    en: "✅ ISC, O2 sensor and CO parameters verification complete.",
+                    it: "✅ Verifica parametri ISC, Sonda O2 e CO completata.",
+                    fr: "✅ Vérification des paramètres ISC, Sonde O2 et CO terminée.",
+                    es: "✅ Verificación de parámetros ISC, Sonda O2 y CO completada.",
+                    de: "✅ Überprüfung der ISC-, Lambda- und CO-Parameter abgeschlossen."
+                )
             }
         }
     }
@@ -900,8 +899,8 @@ class OBD2Manager: ObservableObject {
             adapterName: peripheralName,
             isCertified: BLEManager.isCertifiedAdapter(name: peripheralName),
             canHeaders: canNodes,
-            engineDTCs: dtcCodes.filter { $0.hasPrefix("Errore") },
-            absDTCs: absDtcCodes.filter { $0.contains("Codice ABS") },
+            engineDTCs: dtcCodes.filter { !$0.contains("✅") && !$0.contains("Nessun") && !$0.contains("No fault") && !$0.contains("Lettura") && !$0.contains("Reading") },
+            absDTCs: absDtcCodes.filter { $0.contains("⚠️") },
             iscStatus: iscLearningStatus,
             o2Status: o2LearningStatus,
             dirtLevel: throttleCleaningLevel,
@@ -990,7 +989,7 @@ class OBD2Manager: ObservableObject {
         }
         
         // Tracciamento diagnostico in tempo reale quando stiamo interrogando o scansionando l'ABS o gli attuatori
-        if isReadingErrors || isProbingABS || isABSTestRunning {
+        if isReadingErrors || isProbingABS {
             if cleanHex != "OK" {
                 let traceEntry = "[\(currentProbeHeader.isEmpty ? absCanHeader : currentProbeHeader) -> \(lastSentCommand)]: \(rawWithSpaces.isEmpty ? cleanHex : rawWithSpaces)"
                 DispatchQueue.main.async {
@@ -1080,26 +1079,49 @@ class OBD2Manager: ObservableObject {
             // Aggiorna feedback Test Attuatori e Reset Apprendimento in tempo reale
             DispatchQueue.main.async {
                 if payload.contains("7B54") {
-                    self.actuatorStatusMessage = "✅ Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67) eseguito con successo (7E8 -> 7B 54)!"
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "✅ Throttle Bodies / ISC Idle Learning Reset (Code 67) completed successfully (7E8 -> 7B 54)!",
+                        it: "✅ Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67) eseguito con successo (7E8 -> 7B 54)!",
+                        fr: "✅ Réinitialisation Apprentissage Ralenti ISC (Code 67) effectuée avec succès (7E8 -> 7B 54) !",
+                        es: "✅ Reinicio Aprendizaje Ralentí ISC (Cód. 67) realizado con éxito (7E8 -> 7B 54)!",
+                        de: "✅ Reset Drosselklappen- / ISC-Leerlaufadaption (Code 67) erfolgreich ausgeführt (7E8 -> 7B 54)!"
+                    )
                 } else if payload.contains("7B52") {
-                    self.actuatorStatusMessage = "✅ Reset Apprendimento Sonda Lambda O2 (Cod. 87) eseguito con successo (7E8 -> 7B 52)!"
-                } else if payload.contains("7170") {
-                    let statusByte = payload.count >= 8 ? String(payload.dropFirst(4).prefix(2)) : "00"
-                    if statusByte == "00" {
-                        self.actuatorStatusMessage = "⚠️ Centralina ABS (\(canId)) pronta: Premi con FORZA leva e pedale! In attesa di pressione..."
-                    } else {
-                        self.actuatorStatusMessage = "⚡ POMPA ABS ATTIVA (\(canId) -> 71 70 \(statusByte))! Pulsazioni in corso sui freni!"
-                    }
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "✅ O2 Lambda Closed-Loop Learning Reset (Code 87) completed successfully (7E8 -> 7B 52)!",
+                        it: "✅ Reset Apprendimento Sonda Lambda O2 (Cod. 87) eseguito con successo (7E8 -> 7B 52)!",
+                        fr: "✅ Réinitialisation Sonde Lambda O2 (Code 87) effectuée avec succès (7E8 -> 7B 52) !",
+                        es: "✅ Reinicio Sonda Lambda O2 (Cód. 87) realizado con éxito (7E8 -> 7B 52)!",
+                        de: "✅ Reset Lambdasonden-Gemischadaption (Code 87) erfolgreich ausgeführt (7E8 -> 7B 52)!"
+                    )
                 } else if payload.contains("71") || payload.contains("6F") || payload.contains("70") {
-                    self.actuatorStatusMessage = "✅ Attuatore attivato da \(canId): \(rawWithSpaces)"
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "✅ Routine executed by \(canId): \(rawWithSpaces)",
+                        it: "✅ Routine eseguita da \(canId): \(rawWithSpaces)",
+                        fr: "✅ Routine exécutée par \(canId) : \(rawWithSpaces)",
+                        es: "✅ Rutina ejecutada por \(canId): \(rawWithSpaces)",
+                        de: "✅ Routine von \(canId) ausgeführt: \(rawWithSpaces)"
+                    )
                 } else if payload.contains("6701") {
-                    self.actuatorStatusMessage = "🔐 Centralina \(canId) richiede Security Access (Seed ricevuto: \(rawWithSpaces))"
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "🔐 ECU \(canId) requires Security Access (Seed: \(rawWithSpaces))",
+                        it: "🔐 Centralina \(canId) richiede Security Access (Seed: \(rawWithSpaces))",
+                        fr: "🔐 Calculateur \(canId) requiert Security Access (Seed : \(rawWithSpaces))",
+                        es: "🔐 ECU \(canId) requiere Security Access (Seed: \(rawWithSpaces))",
+                        de: "🔐 Steuergerät \(canId) erfordert Security Access (Seed: \(rawWithSpaces))"
+                    )
                 } else if payload.contains("7F31") {
-                    self.actuatorStatusMessage = "ℹ️ Risposta \(canId) su Routine 0x31: \(rawWithSpaces)"
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "ℹ️ Response \(canId) on Routine 0x31: \(rawWithSpaces)",
+                        it: "ℹ️ Risposta \(canId) su Routine 0x31: \(rawWithSpaces)",
+                        fr: "ℹ️ Réponse \(canId) sur Routine 0x31 : \(rawWithSpaces)",
+                        es: "ℹ️ Respuesta \(canId) en Rutina 0x31: \(rawWithSpaces)",
+                        de: "ℹ️ Antwort \(canId) auf Routine 0x31: \(rawWithSpaces)"
+                    )
                 }
             }
             
-            if canId == "7EB" || canId == rxAddress(for: absCanHeader) || selectedECU == .abs || isProbingABS || isABSTestRunning {
+            if canId == "7EB" || canId == rxAddress(for: absCanHeader) || selectedECU == .abs || isProbingABS {
                 if canId != "7E8" || currentProbeHeader == "7E0" {
                     parseABSResponse(payload, responderCANID: canId)
                 } else if isProbingABS && canId == "7E8" {
@@ -1119,8 +1141,8 @@ class OBD2Manager: ObservableObject {
                     parseEngineDTC(cleanPayload)
                 }
             }
-        } else if cleanHex.hasPrefix("59") || cleanHex.hasPrefix("58") || cleanHex.hasPrefix("54") || cleanHex.hasPrefix("50") || cleanHex.hasPrefix("7E") || cleanHex.hasPrefix("7F") || cleanHex.hasPrefix("7170") {
-            if selectedECU == .abs || isProbingABS || isABSTestRunning || cleanHex.hasPrefix("58") || cleanHex.hasPrefix("7170") {
+        } else if cleanHex.hasPrefix("59") || cleanHex.hasPrefix("58") || cleanHex.hasPrefix("54") || cleanHex.hasPrefix("50") || cleanHex.hasPrefix("7E") || cleanHex.hasPrefix("7F") {
+            if selectedECU == .abs || isProbingABS || cleanHex.hasPrefix("58") {
                 parseABSResponse(cleanHex, responderCANID: rxAddress(for: absCanHeader))
             }
         } else if cleanHex.hasPrefix("43") {
@@ -1132,8 +1154,14 @@ class OBD2Manager: ObservableObject {
         } else if cleanHex.contains("NODATA") {
             DispatchQueue.main.async {
                 if self.isReadingErrors && self.selectedECU == .engine {
-                    if self.dtcCodes.first?.contains("Lettura") == true {
-                        self.dtcCodes = ["Nessun errore memorizzato sulla centralina Motore (NO DATA)."]
+                    if self.dtcCodes.first?.contains("Lettura") == true || self.dtcCodes.first?.contains("Reading") == true {
+                        self.dtcCodes = [self.localizedMsg(
+                            en: "No fault codes stored on Engine ECU (NO DATA).",
+                            it: "Nessun errore memorizzato sulla centralina Motore (NO DATA).",
+                            fr: "Aucun code défaut mémorisé sur l'ECU Moteur (NO DATA).",
+                            es: "Sin códigos de error almacenados en la ECU Motor (NO DATA).",
+                            de: "Keine Fehlercodes im Motorsteuergerät gespeichert (NO DATA)."
+                        )]
                     }
                 }
             }
@@ -1153,11 +1181,18 @@ class OBD2Manager: ObservableObject {
     private func parseEngineDTC(_ hexStr: String) {
         if hexStr.hasPrefix("4300") || hexStr == "43" {
             DispatchQueue.main.async {
-                if self.dtcCodes.first?.contains("Lettura") == true {
+                if self.dtcCodes.first?.contains("Lettura") == true || self.dtcCodes.first?.contains("Reading") == true {
                     self.dtcCodes = []
                 }
-                if !self.dtcCodes.contains("✅ La centralina Motore (FI ECU 7E8) ha risposto: Nessun errore in memoria (43 00).") {
-                    self.dtcCodes.append("✅ La centralina Motore (FI ECU 7E8) ha risposto: Nessun errore in memoria (43 00).")
+                let noErrorMsg = self.localizedMsg(
+                    en: "✅ Engine ECU (FI ECU 7E8) responded: No fault codes in memory (43 00).",
+                    it: "✅ La centralina Motore (FI ECU 7E8) ha risposto: Nessun errore in memoria (43 00).",
+                    fr: "✅ L'ECU Moteur (FI ECU 7E8) a répondu : Aucun défaut en mémoire (43 00).",
+                    es: "✅ La ECU Motor (FI ECU 7E8) respondió: Sin errores en memoria (43 00).",
+                    de: "✅ Motorsteuergerät (FI ECU 7E8) antwortete: Keine Fehler im Speicher (43 00)."
+                )
+                if !self.dtcCodes.contains(noErrorMsg) {
+                    self.dtcCodes.append(noErrorMsg)
                 }
             }
             return
@@ -1180,8 +1215,10 @@ class OBD2Manager: ObservableObject {
                     let b1 = String(chunk.prefix(2))
                     let b2 = String(chunk.dropFirst(2))
                     let pCode = decodeDTCFromBytes(b1, b2)
-                    let desc = dtcDatabase[pCode] ?? "Guasto non presente nel DB offline"
-                    decodedCodes.append("Errore \(pCode): \(desc)")
+                    let notInDb = self.localizedMsg(en: "Fault code not found in offline DB", it: "Guasto non presente nel DB offline", fr: "Code défaut absent de la base locale", es: "Código no presente en la BD local", de: "Fehler nicht in lokaler Datenbank")
+                    let errLabel = self.localizedMsg(en: "Fault", it: "Errore", fr: "Défaut", es: "Avería", de: "Fehler")
+                    let desc = dtcDatabase[pCode] ?? notInDb
+                    decodedCodes.append("\(errLabel) \(pCode): \(desc)")
                 }
                 idx = next4
             }
@@ -1194,13 +1231,15 @@ class OBD2Manager: ObservableObject {
                     let b1 = String(chunk.prefix(2))
                     let b2 = String(chunk.dropFirst(2))
                     let pCode = decodeDTCFromBytes(b1, b2)
-                    let desc = dtcDatabase[pCode] ?? "Guasto non presente nel DB offline"
-                    decodedCodes.append("Errore \(pCode): \(desc)")
+                    let notInDb = self.localizedMsg(en: "Fault code not found in offline DB", it: "Guasto non presente nel DB offline", fr: "Code défaut absent de la base locale", es: "Código no presente en la BD local", de: "Fehler nicht in lokaler Datenbank")
+                    let errLabel = self.localizedMsg(en: "Fault", it: "Errore", fr: "Défaut", es: "Avería", de: "Fehler")
+                    let desc = dtcDatabase[pCode] ?? notInDb
+                    decodedCodes.append("\(errLabel) \(pCode): \(desc)")
                 }
                 idx = next4
             }
         } else {
-            decodedCodes.append("Errore grezzo rilevato: \(hexStr)")
+            decodedCodes.append(self.localizedMsg(en: "Raw fault detected: \(hexStr)", it: "Errore grezzo rilevato: \(hexStr)", fr: "Défaut brut détecté : \(hexStr)", es: "Avería sin procesar detectada: \(hexStr)", de: "Roher Fehler erkannt: \(hexStr)"))
         }
         
         DispatchQueue.main.async {
@@ -1250,23 +1289,16 @@ class OBD2Manager: ObservableObject {
             }
         }
         
-        // Caso Routine Control 0x71 (Risposta a 31 70 01 / 31 70 02)
-        if clean.hasPrefix("7170") {
-            let routineStatus = clean.count >= 6 ? String(clean.dropFirst(4).prefix(2)) : "00"
-            DispatchQueue.main.async {
-                if routineStatus == "00" {
-                    self.actuatorStatusMessage = "⚠️ Centralina ABS (\(responderCANID)) pronta: Tieni premuti CON FORZA sia la LEVA che il PEDALE freno! In attesa di pressione..."
-                } else {
-                    self.actuatorStatusMessage = "⚡ POMPA ABS ATTIVA (\(responderCANID) -> 71 70 \(routineStatus))! Senti le pulsazioni idrauliche su leva e pedale!"
-                }
-            }
-            return
-        }
-        
         // Caso 1: Risposta positiva cancellazione errori (54 FF FF FF)
         if clean.contains("54FFFFFF") {
             DispatchQueue.main.async {
-                self.absDtcCodes = ["✅ Storico errori ABS cancellato con successo dalla centralina (7EB -> 54 FF FF FF)!"]
+                self.absDtcCodes = [self.localizedMsg(
+                    en: "✅ ABS fault memory cleared successfully by ECU (7EB -> 54 FF FF FF)!",
+                    it: "✅ Storico errori ABS cancellato con successo dalla centralina (7EB -> 54 FF FF FF)!",
+                    fr: "✅ Mémoire défauts ABS effacée avec succès (7EB -> 54 FF FF FF) !",
+                    es: "✅ ¡Memoria de averías ABS borrada con éxito (7EB -> 54 FF FF FF)!",
+                    de: "✅ ABS-Fehlerspeicher erfolgreich vom Steuergerät gelöscht (7EB -> 54 FF FF FF)!"
+                )]
             }
             return
         }
@@ -1278,8 +1310,20 @@ class OBD2Manager: ObservableObject {
                     self.absDtcCodes.removeAll()
                 }
                 let statusMsg = clean.hasPrefix("50")
-                    ? "✅ Connessione stabilita con centralina ABS (\(responderCANID) - Sessione Diagnostica Attiva)"
-                    : "✅ Centralina ABS (\(responderCANID)) online"
+                    ? self.localizedMsg(
+                        en: "✅ Connection established with ABS ECU (\(responderCANID) - Diagnostic Session Active)",
+                        it: "✅ Connessione stabilita con centralina ABS (\(responderCANID) - Sessione Diagnostica Attiva)",
+                        fr: "✅ Connexion établie avec l'ECU ABS (\(responderCANID) - Session Diagnostique Active)",
+                        es: "✅ Conexión establecida con ECU ABS (\(responderCANID) - Sesión Diagnóstica Activa)",
+                        de: "✅ Verbindung zum ABS-Steuergerät hergestellt (\(responderCANID) - Diagnose-Sitzung aktiv)"
+                    )
+                    : self.localizedMsg(
+                        en: "✅ ABS ECU (\(responderCANID)) online",
+                        it: "✅ Centralina ABS (\(responderCANID)) online",
+                        fr: "✅ ECU ABS (\(responderCANID)) en ligne",
+                        es: "✅ ECU ABS (\(responderCANID)) en línea",
+                        de: "✅ ABS-Steuergerät (\(responderCANID)) online"
+                    )
                 if !self.absDtcCodes.contains(statusMsg) {
                     self.absDtcCodes.append(statusMsg)
                 }
@@ -1304,7 +1348,13 @@ class OBD2Manager: ObservableObject {
                     if self.absDtcCodes.first?.contains("Interrogazione") == true {
                         self.absDtcCodes.removeAll()
                     }
-                    let msg = "🟢 Nessun errore presente nella centralina ABS (Risposta 7EB: 58 00 - 0 guasti in memoria)."
+                    let msg = self.localizedMsg(
+                        en: "🟢 No fault codes stored in ABS ECU (Response 7EB: 58 00 - 0 faults in memory).",
+                        it: "🟢 Nessun errore presente nella centralina ABS (Risposta 7EB: 58 00 - 0 guasti in memoria).",
+                        fr: "🟢 Aucun code défaut dans l'ECU ABS (Réponse 7EB : 58 00 - 0 défaut en mémoire).",
+                        es: "🟢 Sin averías en la memoria ABS (Respuesta 7EB: 58 00 - 0 averías en memoria).",
+                        de: "🟢 Keine Fehler im ABS-Steuergerät (Antwort 7EB: 58 00 - 0 Fehler im Speicher)."
+                    )
                     if !self.absDtcCodes.contains(msg) {
                         self.absDtcCodes.append(msg)
                     }
@@ -1322,7 +1372,9 @@ class OBD2Manager: ObservableObject {
                 let triplet = String(dtcPayload[idx..<endIdx])
                 let codeByte = String(triplet.dropFirst(2).prefix(2))
                 let statusByte = String(triplet.dropFirst(4).prefix(2))
-                let statusDesc = (statusByte == "20") ? "[Storico/Passato]" : "[Attivo - Stato 0x\(statusByte)]"
+                let statusDesc = (statusByte == "20")
+                    ? self.localizedMsg(en: "[Historical/Past]", it: "[Storico/Passato]", fr: "[Historique/Passé]", es: "[Histórico/Pasado]", de: "[Historisch/Vergangen]")
+                    : self.localizedMsg(en: "[Active - State 0x\(statusByte)]", it: "[Attivo - Stato 0x\(statusByte)]", fr: "[Actif - État 0x\(statusByte)]", es: "[Activo - Estado 0x\(statusByte)]", de: "[Aktiv - Status 0x\(statusByte)]")
                 let formatted = "⚠️ \(statusDesc) " + lookupABSCode(codeByte)
                 if !foundCodes.contains(formatted) {
                     foundCodes.append(formatted)
@@ -1334,7 +1386,13 @@ class OBD2Manager: ObservableObject {
                 if self.absDtcCodes.first?.contains("Interrogazione") == true {
                     self.absDtcCodes.removeAll()
                 }
-                let headerMsg = "🔴 Rilevati \(numDTC) codici errore nella memoria ABS (\(responderCANID)):"
+                let headerMsg = self.localizedMsg(
+                    en: "🔴 Detected \(numDTC) fault code(s) in ABS memory (\(responderCANID)):",
+                    it: "🔴 Rilevati \(numDTC) codici errore nella memoria ABS (\(responderCANID)):",
+                    fr: "🔴 Détection de \(numDTC) code(s) défaut dans la mémoire ABS (\(responderCANID)) :",
+                    es: "🔴 Detectados \(numDTC) código(s) de avería en la memoria ABS (\(responderCANID)):",
+                    de: "🔴 \(numDTC) Fehlercode(s) im ABS-Speicher erkannt (\(responderCANID)):"
+                )
                 if !self.absDtcCodes.contains(headerMsg) {
                     self.absDtcCodes.append(headerMsg)
                 }
@@ -1405,9 +1463,9 @@ class OBD2Manager: ObservableObject {
                 let w3 = String(dataHex.dropFirst(8).prefix(4))
                 let isReset = (w1 == "8000" && w2 == "8000" && w3 == "8000")
                 let stateTag = isReset
-                    ? "⚠️ AZZERATO (Valori base 0x8000)"
-                    : "✅ APPRESO REGOLARE"
-                self.iscLearningStatus = "Cil #1: 0x\(w1) | Cil #2: 0x\(w2) | Cil #3: 0x\(w3)\nStato: \(stateTag)"
+                    ? (self.isLangIT ? "⚠️ AZZERATO (Valori base 0x8000)" : "⚠️ RESET (Base 0x8000)")
+                    : (self.isLangIT ? "✅ APPRESO REGOLARE" : "✅ ADAPTED NORMAL")
+                self.iscLearningStatus = "Cyl #1: 0x\(w1) | Cyl #2: 0x\(w2) | Cyl #3: 0x\(w3)\n\(self.isLangIT ? "Stato:" : "State:") \(stateTag)"
                 
                 // Calcolo compensazione depositi corpi farfallati rispetto allo zero di fabbrica 0x8000 (32768)
                 // Escursione massima prima del limite superiore (Event Code 242 / Cod. 67 = 02): ±0x2000 (8192 step)
@@ -1421,16 +1479,24 @@ class OBD2Manager: ObservableObject {
                 
                 if isReset {
                     self.throttleCleaningLevel = 0
-                    self.throttleCleaningStatus = "⚪ Apprendimento appena azzerato (0%). Avvia il motore al minimo per rilevare lo stato dei corpi farfallati."
+                    self.throttleCleaningStatus = self.isLangIT
+                        ? "⚪ Apprendimento appena azzerato (0%). Avvia il motore al minimo per rilevare lo stato dei corpi farfallati."
+                        : "⚪ Learning freshly reset (0%). Start engine at idle to detect throttle body condition."
                 } else if pct < 35.0 {
                     self.throttleCleaningLevel = 1
-                    self.throttleCleaningStatus = String(format: "🟢 CORPI FARFALLATI PULITI (Compensazione ISC: %.1f%% — +%d step da 0x8000). Nessuna pulizia necessaria.", pct, maxDelta)
+                    self.throttleCleaningStatus = self.isLangIT
+                        ? String(format: "🟢 CORPI FARFALLATI PULITI (Compensazione ISC: %.1f%% — +%d step da 0x8000). Nessuna pulizia necessaria.", pct, maxDelta)
+                        : String(format: "🟢 THROTTLE BODIES CLEAN (ISC Trim: %.1f%% — +%d steps from 0x8000). No cleaning required.", pct, maxDelta)
                 } else if pct < 75.0 {
                     self.throttleCleaningLevel = 2
-                    self.throttleCleaningStatus = String(format: "🟡 DEPOSITI MODERATI (Compensazione ISC: %.1f%% — +%d step da 0x8000). Pulizia consigliata al prossimo tagliando.", pct, maxDelta)
+                    self.throttleCleaningStatus = self.isLangIT
+                        ? String(format: "🟡 DEPOSITI MODERATI (Compensazione ISC: %.1f%% — +%d step da 0x8000). Pulizia consigliata al prossimo tagliando.", pct, maxDelta)
+                        : String(format: "🟡 MODERATE DEPOSITS (ISC Trim: %.1f%% — +%d steps from 0x8000). Cleaning recommended at next service.", pct, maxDelta)
                 } else {
                     self.throttleCleaningLevel = 3
-                    self.throttleCleaningStatus = String(format: "🔴 PULIZIA NECESSARIA! (Compensazione ISC: %.1f%% — limite Cod. 242).", pct)
+                    self.throttleCleaningStatus = self.isLangIT
+                        ? String(format: "🔴 PULIZIA NECESSARIA! (Compensazione ISC: %.1f%% — limite Cod. 242).", pct)
+                        : String(format: "🔴 CLEANING REQUIRED! (ISC Trim: %.1f%% — Event 242 limit).", pct)
                 }
             case "52":
                 // Apprendimento Sonda Lambda O2 (Cod. 87)
@@ -1441,9 +1507,9 @@ class OBD2Manager: ObservableObject {
                 let count = String(dataHex.dropFirst(12).prefix(4))
                 let isReset = (trim1 == "0200" && trim2 == "0200")
                 let stateTag = isReset
-                    ? "⚠️ AZZERATO (0x0200 = Neutro Fabbrica)"
-                    : "✅ APPRESO REGOLARE"
-                self.o2LearningStatus = "Trim: 0x\(trim1) / 0x\(trim2) | Cicli: 0x\(count)\nStato: \(stateTag)"
+                    ? (self.isLangIT ? "⚠️ AZZERATO (0x0200 = Neutro Fabbrica)" : "⚠️ RESET (0x0200 = Factory Neutral)")
+                    : (self.isLangIT ? "✅ APPRESO REGOLARE" : "✅ ADAPTED NORMAL")
+                self.o2LearningStatus = "Trim: 0x\(trim1) / 0x\(trim2) | \(self.isLangIT ? "Cicli:" : "Cycles:") 0x\(count)\n\(self.isLangIT ? "Stato:" : "State:") \(stateTag)"
             case "58":
                 // Registro 0x58: <TargetISC 16-bit> <Flag Cod. 67 (00=Azzerato, 01=OK, 02=Pulizia Necessaria)> <Flag Cod. 87>
                 let p1 = String(dataHex.prefix(4))
@@ -1454,9 +1520,11 @@ class OBD2Manager: ObservableObject {
                 // Verifica flag ufficiale Yamaha Cod. 67 (Manuale pag. 3-8 e pag. 9-15: "02" -> Clean the throttle bodies)
                 if code67Flag == "0002" {
                     self.throttleCleaningLevel = 3
-                    self.throttleCleaningStatus = "🔴 PULIZIA CORPI FARFALLATI RICHIESTA DALLA ECU! (Cod. Diag. 67 = 02 — Manuale pag. 3-8: limite ISC raggiunto)."
+                    self.throttleCleaningStatus = self.isLangIT
+                        ? "🔴 PULIZIA CORPI FARFALLATI RICHIESTA DALLA ECU! (Cod. Diag. 67 = 02 — Manuale pag. 3-8: limite ISC raggiunto)."
+                        : "🔴 THROTTLE BODY CLEANING REQUESTED BY ECU! (Diag Code 67 = 02 — Manual p. 3-8: ISC limit reached)."
                 } else if code67Flag == "0001" && self.throttleCleaningLevel == 1 {
-                    self.throttleCleaningStatus += " [Flag ECU Cod. 67 = 01 OK]"
+                    self.throttleCleaningStatus += self.isLangIT ? " [Flag ECU Cod. 67 = 01 OK]" : " [ECU Flag Code 67 = 01 OK]"
                 }
             default:
                 break

@@ -459,20 +459,6 @@ public class LocalizationManager: ObservableObject {
             .spanish: "Unidad de Control",
             .german: "Steuergerät-Auswahl"
         ],
-        "act_cat_engine": [
-            .italian: "Motore (FI ECU — ISC & Sonda O2)",
-            .english: "Engine (FI ECU — ISC & O2 Sensor)",
-            .french: "Moteur (FI ECU — ISC & Sonde O2)",
-            .spanish: "Motor (FI ECU — ISC y Sonda O2)",
-            .german: "Motor (FI ECU — ISC & Lambdasonde)"
-        ],
-        "act_cat_abs": [
-            .italian: "Unità Idraulica ABS",
-            .english: "ABS Hydraulic Unit",
-            .french: "Unité Hydraulique ABS",
-            .spanish: "Unidad Hidráulica ABS",
-            .german: "ABS-Hydraulikeinheit"
-        ],
         "act_danger_title": [
             .italian: "PERICOLO: MOTORE IN MOTO O RUOTE IN MOVIMENTO!",
             .english: "DANGER: ENGINE RUNNING OR WHEELS IN MOTION!",
@@ -481,11 +467,11 @@ public class LocalizationManager: ObservableObject {
             .german: "GEFAHR: MOTOR LÄUFT ODER RÄDER DREHEN SICH!"
         ],
         "act_danger_msg": [
-            .italian: "I reset adattivi e i test idraulici sono disabilitati mentre il motore gira. Spegni il motore e lascia solo il quadro acceso (Key ON).",
-            .english: "Adaptive resets and hydraulic tests are disabled while the engine runs. Stop engine and keep ignition ON.",
-            .french: "Les réinitialisations adaptatives et tests hydrauliques sont désactivés pendant que le moteur tourne. Coupez le moteur et laissez le contact.",
-            .spanish: "Los reinicios adaptativos y pruebas hidráulicas están deshabilitados con el motor encendido. Apaga el motor y mantén el contacto.",
-            .german: "Adaptive Resets und Hydrauliktests sind bei laufendem Motor gesperrt. Motor ausschalten und nur Zündung eingeschaltet lassen."
+            .italian: "I reset adattivi sono disabilitati mentre il motore gira. Spegni il motore e lascia solo il quadro acceso (Key ON).",
+            .english: "Adaptive resets are disabled while the engine runs. Stop engine and keep ignition ON.",
+            .french: "Les réinitialisations adaptatives sont désactivées pendant que le moteur tourne. Coupez le moteur et laissez le contact.",
+            .spanish: "Los reinicios adaptativos están deshabilitados con el motor encendido. Apaga el motor y mantén el contacto.",
+            .german: "Adaptive Resets sind bei laufendem Motor gesperrt. Motor ausschalten und nur Zündung eingeschaltet lassen."
         ],
         "act_ready_engine": [
             .italian: "Motore fermo. Funzioni di verifica e reset adattivo FI ECU (7E0) sbloccate.",
@@ -493,13 +479,6 @@ public class LocalizationManager: ObservableObject {
             .french: "Moteur arrêté. Fonctions de contrôle et réinitialisation adaptative FI ECU (7E0) déverrouillées.",
             .spanish: "Motor apagado. Funciones de verificación y reinicio adaptativo FI ECU (7E0) desbloqueadas.",
             .german: "Motor aus. FI ECU (7E0) Prüf- und adaptive Resetfunktionen freigeschaltet."
-        ],
-        "act_ready_abs": [
-            .italian: "Motore fermo e ruote ferme. Test Unità Idraulica ABS sbloccati.",
-            .english: "Engine and wheels stopped. ABS Hydraulic Unit tests unlocked.",
-            .french: "Moteur et roues à l'arrêt. Tests de l'unité hydraulique ABS déverrouillés.",
-            .spanish: "Motor y ruedas detenidas. Pruebas de la unidad hidráulica ABS desbloqueadas.",
-            .german: "Motor und Räder stillstehend. Tests der ABS-Hydraulikeinheit freigeschaltet."
         ],
         "act_start_btn": [
             .italian: "Avvia Procedura",
@@ -514,48 +493,6 @@ public class LocalizationManager: ObservableObject {
             .french: "Exécution en cours...",
             .spanish: "Ejecutando...",
             .german: "Wird ausgeführt..."
-        ],
-        "act_abs_running_title": [
-            .italian: "TEST POMPA ABS IN CORSO...",
-            .english: "ABS PUMP TEST RUNNING...",
-            .french: "TEST POMPE ABS EN COURS...",
-            .spanish: "TEST BOMBA ABS EN CURSO...",
-            .german: "ABS-PUMPENTEST LÄUFT..."
-        ],
-        "act_abs_running_desc": [
-            .italian: "Tieni saldamente premuti LEVA ANTERIORE e PEDALE POSTERIORE!",
-            .english: "Firmly squeeze FRONT LEVER and depress REAR PEDAL!",
-            .french: "Serrez fermement le LEVIER AVANT et la PÉDALE ARRIÈRE !",
-            .spanish: "¡Mantén presionados con firmeza la MANETA DELANTERA y el PEDAL TRASERO!",
-            .german: "VORDEREN HEBEL und HINTERES PEDAL fest gedrückt halten!"
-        ],
-        "act_abs_stop_btn": [
-            .italian: "Interrompi Test",
-            .english: "Stop Test",
-            .french: "Arrêter le Test",
-            .spanish: "Detener Test",
-            .german: "Test Abbrechen"
-        ],
-        "act_abs_alert_title": [
-            .italian: "Pronto per il Test Idraulico ABS?",
-            .english: "Ready for ABS Hydraulic Test?",
-            .french: "Prêt pour le Test Hydraulique ABS ?",
-            .spanish: "¿Listo para la Prueba Hidráulica ABS?",
-            .german: "Bereit für den ABS-Hydrauliktest?"
-        ],
-        "act_abs_alert_confirm": [
-            .italian: "Ho capito, Avvia il Test (12s)!",
-            .english: "Understood, Start Test (12s)!",
-            .french: "Compris, Démarrer le Test (12s) !",
-            .spanish: "¡Entendido, Iniciar Test (12s)!",
-            .german: "Verstanden, Test Starten (12s)!"
-        ],
-        "act_abs_alert_body": [
-            .italian: "⚠️ PROCEDURA UFFICIALE YAMAHA (Manuale pag. 4-65/4-67):\n\n1. Moto sul cavalletto centrale, motore spento, quadro su ON.\n2. Batteria sopra i 12.8V.\n3. PREMI E TIENI PREMUTI SALDAMENTE la LEVA del freno anteriore e il PEDALE del freno posteriore.\n4. Mantieni la pressione costante per tutti i 12 secondi del countdown.\n\nIl modulatore ABS attende 1 secondo di pressione simultanea, poi aziona la pompa e i solenoidi generando la pulsazione nell'ordine:\n1° Leva Anteriore\n2° Pedale Posteriore\n3° Leva Anteriore.",
-            .english: "⚠️ OFFICIAL YAMAHA PROCEDURE (Manual p. 4-65/4-67):\n\n1. Bike on centerstand, engine off, ignition ON.\n2. Battery above 12.8V.\n3. FIRMLY SQUEEZE the front brake lever and DEPRESS the rear brake pedal.\n4. Hold pressure steadily for all 12 seconds of the countdown.\n\nThe ABS hydraulic unit waits 1 second of simultaneous pressure, then cycles the pump and solenoid valves generating pulses in order:\n1st Front Lever\n2nd Rear Pedal\n3rd Front Lever.",
-            .french: "⚠️ PROCÉDURE OFFICIELLE YAMAHA (Manuel p. 4-65/4-67) :\n\n1. Moto sur la béquille centrale, moteur coupé, contact sur ON.\n2. Batterie supérieure à 12,8V.\n3. SERREZ FERMEMENT le levier avant et la pédale arrière.\n4. Maintenez la pression pendant les 12 secondes du compte à rebours.\n\nL'unité ABS attend 1 seconde de pression simultanée, puis active la pompe et les électrovannes avec pulsations dans l'ordre :\n1° Levier Avant\n2° Pédale Arrière\n3° Levier Avant.",
-            .spanish: "⚠️ PROCEDIMIENTO OFICIAL YAMAHA (Manual pág. 4-65/4-67):\n\n1. Moto en caballete central, motor apagado, contacto en ON.\n2. Batería superior a 12,8V.\n3. APRIETA CON FUERZA la maneta delantera y el pedal trasero.\n4. Mantén la presión durante los 12 segundos de la cuenta atrás.\n\nEl modulador ABS espera 1 segundo de presión simultánea y luego acciona la bomba y las electroválvulas pulsando en orden:\n1° Maneta Delantera\n2° Pedal Trasero\n3° Maneta Delantera.",
-            .german: "⚠️ OFFIZIELLER YAMAHA-ABLAUF (Handbuch S. 4-65/4-67):\n\n1. Motorrad auf Hauptständer, Motor aus, Zündung AN.\n2. Batteriespannung über 12,8V.\n3. Bremshebel vorne und Bremspedal hinten FEST GEDRÜCKT HALTEN.\n4. Druck während des gesamten 12-Sekunden-Countdowns halten.\n\nDas ABS-Aggregat wartet 1 Sekunde gleichzeitigen Druck ab und steuert dann Pumpe und Magnetventile in dieser Reihenfolge an:\n1. Handbremshebel\n2. Fußbremspedal\n3. Handbremshebel."
         ],
         
         // Setup (Language + AI)

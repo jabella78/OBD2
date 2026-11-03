@@ -54,11 +54,8 @@ class OBD2Manager: ObservableObject {
     @Published var isRecording: Bool = false
     @Published var isPollingPaused: Bool = true // In pausa di default all'avvio: si attiva a richiesta dalla Dashboard per non saturare il terminale
     @Published var isScanningABS: Bool = false
-    @Published var isABSTestRunning: Bool = false
-    @Published var absTestCountdown: Int = 0
     @Published var isDemoMode: Bool = false
     private var demoTimer: Timer? = nil
-    private var absTestTimer: Timer? = nil
     private var telemetryTimer: Timer? = nil
     @Published var lastABSRawTrace: [String] = []
     @Published var actuatorStatusMessage: String = "Pronto. Seleziona un componente per avviare il test."
@@ -195,7 +192,6 @@ class OBD2Manager: ObservableObject {
                   !self.isInitializing,
                   !self.isReadingErrors,
                   !self.isProbingABS,
-                  !self.isABSTestRunning,
                   !self.isPollingPaused else { return }
             guard self.commandQueue.isEmpty else { return } // Evita lag infinito
             
@@ -421,7 +417,7 @@ class OBD2Manager: ObservableObject {
         self.dtcCodes = ["Cancellazione errori FI ECU in corso..."]
         enqueueCommand("ATSH 7E0")
         enqueueCommand("ATCRA 7E8")
-        enqueueCommand("04")
+        enqueueCommand(SecurityVault.shared.getClearEngineCommand())
         enqueueCommand("ATCRA")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             self.dtcCodes = ["Comando cancellazione errori FI ECU inviato (Mode 04)."]
@@ -524,12 +520,12 @@ class OBD2Manager: ObservableObject {
             self.enqueueCommand("ATH1")
             self.enqueueCommand("ATSH \(targetTx)")
             self.enqueueCommand("ATCRA \(targetRx)")
-            self.enqueueCommand("1003")     // Sessione diagnostica estesa (risponde 7EB 02 50 03)
-            self.enqueueCommand("14FFFFFF") // Clear Diagnostic Information (risponde 7EB 04 54 FF FF FF)
+            self.enqueueCommand(SecurityVault.shared.getExtendedSessionCommand()) // Sessione diagnostica estesa
+            self.enqueueCommand(SecurityVault.shared.getClearABSCommand())         // Clear Diagnostic Information
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
                 guard let self = self else { return }
-                self.enqueueCommand("1001")
+                self.enqueueCommand(SecurityVault.shared.getDefaultSessionCommand())
                 self.enqueueCommand("ATCRA")
                 self.enqueueCommand("ATH0")
                 self.enqueueCommand("ATSH 7E0")
@@ -642,12 +638,7 @@ class OBD2Manager: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: checkWorkItem)
     }
     
-    func sendActuatorCommand(code: Int, isABSTest: Bool = false) {
-        if isABSTest {
-            startABSHydraulicTest(code: code)
-            return
-        }
-        
+    func sendActuatorCommand(code: Int) {
         verifyEngineSafetyBeforeActuator { [weak self] isSafe in
             guard let self = self, isSafe else { return }
             
@@ -673,19 +664,19 @@ class OBD2Manager: ObservableObject {
                 self.enqueueCommand("ATFCSH 7E0")
                 self.enqueueCommand("ATFCSD 300000")
                 self.enqueueCommand("ATFCSM 1")
-                self.enqueueCommand("1003")
+                self.enqueueCommand(SecurityVault.shared.getExtendedSessionCommand())
                 
                 if code == 67 {
-                    self.enqueueCommand("3B5401")
+                    self.enqueueCommand(SecurityVault.shared.getResetISCCommand())
                     self.enqueueCommand("2154")
                 } else if code == 87 {
-                    self.enqueueCommand("3B5201")
+                    self.enqueueCommand(SecurityVault.shared.getResetO2Command())
                     self.enqueueCommand("3B5801")
                     self.enqueueCommand("2152")
                     self.enqueueCommand("2158")
                 }
                 
-                self.enqueueCommand("1001")
+                self.enqueueCommand(SecurityVault.shared.getDefaultSessionCommand())
                 self.enqueueCommand("ATFCSM 0")
                 self.enqueueCommand("ATCRA")
                 self.enqueueCommand("ATH0")
@@ -695,98 +686,6 @@ class OBD2Manager: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
                 self.isReadingErrors = false
             }
-        }
-    }
-    
-    // MARK: - Procedura Dedicata Test Idraulico & Spurgo Pompa ABS (Manuale pag. 4-65/4-67)
-    
-    func startABSHydraulicTest(code: Int) {
-        verifyEngineSafetyBeforeActuator { [weak self] isSafe in
-            guard let self = self, isSafe else { return }
-            
-            self.isReadingErrors = true
-            self.isAwaitingResponse = true
-            self.commandQueue.removeAll()
-            self.buffer = ""
-            self.absTestTimer?.invalidate()
-            self.absTestTimer = nil
-            
-            let routineCode = String(format: "%02X", code)
-            let targetTx = self.absCanHeader
-            let targetRx = self.rxAddress(for: targetTx)
-            
-            DispatchQueue.main.async {
-                self.lastABSRawTrace.removeAll()
-                self.isABSTestRunning = true
-                self.absTestCountdown = 14
-                self.actuatorStatusMessage = "⏳ PREPARAZIONE: Premi e tieni premuti con FORZA sia la LEVA freno che il PEDALE! Avvio sequenza in corso..."
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-                guard let self = self, self.isABSTestRunning else { return }
-                self.buffer = ""
-                self.isAwaitingResponse = false
-                
-                self.enqueueCommand("ATE0")
-                self.enqueueCommand("ATH1")
-                self.enqueueCommand("ATSH \(targetTx)")
-                self.enqueueCommand("ATCRA \(targetRx)")
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-                    guard let self = self, self.isABSTestRunning else { return }
-                    self.enqueueCommand("1003")
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-                        guard let self = self, self.isABSTestRunning else { return }
-                        self.enqueueCommand("3170\(routineCode)")
-                        
-                        self.absTestTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-                            guard let self = self else {
-                                timer.invalidate()
-                                return
-                            }
-                            
-                            DispatchQueue.main.async {
-                                if self.absTestCountdown > 1 {
-                                    self.absTestCountdown -= 1
-                                    if self.absTestCountdown % 2 == 0 {
-                                        self.enqueueCommand("3E00")
-                                    }
-                                } else {
-                                    timer.invalidate()
-                                    self.absTestTimer = nil
-                                    self.stopABSHydraulicTest(completedSuccessfully: true)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func stopABSHydraulicTest(completedSuccessfully: Bool = false) {
-        absTestTimer?.invalidate()
-        absTestTimer = nil
-        
-        DispatchQueue.main.async {
-            self.isABSTestRunning = false
-            self.absTestCountdown = 0
-            if completedSuccessfully {
-                self.actuatorStatusMessage = "✅ Test ABS terminato! Se hai percepito le pulsazioni idrauliche (Leva Ant. ➔ Pedale Post. ➔ Leva Ant.), pompa e valvole ABS sono perfettamente funzionanti."
-            } else {
-                self.actuatorStatusMessage = "⏹️ Test Pompa ABS interrotto."
-            }
-        }
-        
-        // Chiusura sessione estesa e ripristino intestazioni CAN per centralina motore
-        self.enqueueCommand("1001")
-        self.enqueueCommand("ATCRA")
-        self.enqueueCommand("ATH0")
-        self.enqueueCommand("ATSH 7E0")
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.isReadingErrors = false
         }
     }
     
@@ -990,7 +889,7 @@ class OBD2Manager: ObservableObject {
         }
         
         // Tracciamento diagnostico in tempo reale quando stiamo interrogando o scansionando l'ABS o gli attuatori
-        if isReadingErrors || isProbingABS || isABSTestRunning {
+        if isReadingErrors || isProbingABS {
             if cleanHex != "OK" {
                 let traceEntry = "[\(currentProbeHeader.isEmpty ? absCanHeader : currentProbeHeader) -> \(lastSentCommand)]: \(rawWithSpaces.isEmpty ? cleanHex : rawWithSpaces)"
                 DispatchQueue.main.async {
@@ -1084,9 +983,15 @@ class OBD2Manager: ObservableObject {
                 } else if payload.contains("7B52") {
                     self.actuatorStatusMessage = "✅ Reset Apprendimento Sonda Lambda O2 (Cod. 87) eseguito con successo (7E8 -> 7B 52)!"
                 } else if payload.contains("7170") {
-                    let statusByte = payload.count >= 8 ? String(payload.dropFirst(4).prefix(2)) : "00"
+                    var statusByte = "00"
+                    if let r = payload.range(of: "7170") {
+                        let after = String(payload[r.upperBound...])
+                        if after.count >= 2 {
+                            statusByte = String(after.prefix(2))
+                        }
+                    }
                     if statusByte == "00" {
-                        self.actuatorStatusMessage = "⚠️ Centralina ABS (\(canId)) pronta: Premi con FORZA leva e pedale! In attesa di pressione..."
+                        self.actuatorStatusMessage = "⚠️ Centralina ABS (\(canId)) in attesa: Premi e tieni premuti CON FORZA sia la LEVA che il PEDALE freno!"
                     } else {
                         self.actuatorStatusMessage = "⚡ POMPA ABS ATTIVA (\(canId) -> 71 70 \(statusByte))! Pulsazioni in corso sui freni!"
                     }
@@ -1099,7 +1004,7 @@ class OBD2Manager: ObservableObject {
                 }
             }
             
-            if canId == "7EB" || canId == rxAddress(for: absCanHeader) || selectedECU == .abs || isProbingABS || isABSTestRunning {
+            if canId == "7EB" || canId == rxAddress(for: absCanHeader) || selectedECU == .abs || isProbingABS {
                 if canId != "7E8" || currentProbeHeader == "7E0" {
                     parseABSResponse(payload, responderCANID: canId)
                 } else if isProbingABS && canId == "7E8" {
@@ -1119,8 +1024,8 @@ class OBD2Manager: ObservableObject {
                     parseEngineDTC(cleanPayload)
                 }
             }
-        } else if cleanHex.hasPrefix("59") || cleanHex.hasPrefix("58") || cleanHex.hasPrefix("54") || cleanHex.hasPrefix("50") || cleanHex.hasPrefix("7E") || cleanHex.hasPrefix("7F") || cleanHex.hasPrefix("7170") {
-            if selectedECU == .abs || isProbingABS || isABSTestRunning || cleanHex.hasPrefix("58") || cleanHex.hasPrefix("7170") {
+        } else if cleanHex.hasPrefix("59") || cleanHex.hasPrefix("58") || cleanHex.hasPrefix("54") || cleanHex.hasPrefix("50") || cleanHex.hasPrefix("7E") || cleanHex.hasPrefix("7F") {
+            if selectedECU == .abs || isProbingABS || cleanHex.hasPrefix("58") {
                 parseABSResponse(cleanHex, responderCANID: rxAddress(for: absCanHeader))
             }
         } else if cleanHex.hasPrefix("43") {
@@ -1250,14 +1155,37 @@ class OBD2Manager: ObservableObject {
             }
         }
         
-        // Caso Routine Control 0x71 (Risposta a 31 70 01 / 31 70 02)
-        if clean.hasPrefix("7170") {
-            let routineStatus = clean.count >= 6 ? String(clean.dropFirst(4).prefix(2)) : "00"
+        // Caso Routine Control 0x71 (Risposta positiva a 31 01 70 01/02 o 31 70 01/02)
+        if clean.contains("710170") || clean.contains("7170") {
+            var statusByte = "00"
+            if let r = clean.range(of: "710170") {
+                let after = String(clean[r.upperBound...])
+                if after.count >= 2 { statusByte = String(after.prefix(2)) }
+            } else if let r = clean.range(of: "7170") {
+                let after = String(clean[r.upperBound...])
+                if after.count >= 2 { statusByte = String(after.prefix(2)) }
+            }
             DispatchQueue.main.async {
-                if routineStatus == "00" {
-                    self.actuatorStatusMessage = "⚠️ Centralina ABS (\(responderCANID)) pronta: Tieni premuti CON FORZA sia la LEVA che il PEDALE freno! In attesa di pressione..."
+                if statusByte == "00" {
+                    self.actuatorStatusMessage = "⚠️ Centralina ABS (\(responderCANID)) in ascolto: Tieni premuti CON FORZA leva e pedale freno! (In attesa trigger)"
                 } else {
-                    self.actuatorStatusMessage = "⚡ POMPA ABS ATTIVA (\(responderCANID) -> 71 70 \(routineStatus))! Senti le pulsazioni idrauliche su leva e pedale!"
+                    self.actuatorStatusMessage = "⚡ POMPA ABS ATTIVA (\(responderCANID) -> 71 70 \(statusByte))! Pulsazioni idrauliche in corso!"
+                }
+            }
+            return
+        }
+        
+        // Rileva eventuali Negative Response Code NRC su Routine 0x31 (es. 7F 31 22)
+        if clean.contains("7F31") {
+            if let r = clean.range(of: "7F31") {
+                let nrc = String(clean[r.upperBound...].prefix(2))
+                var nrcDesc = "Codice 0x\(nrc)"
+                if nrc == "12" { nrcDesc = "SubFunzione non supportata (0x12)" }
+                else if nrc == "22" { nrcDesc = "Condizioni non corrette (0x22 - es. freni o cavalletto)" }
+                else if nrc == "31" { nrcDesc = "Richiesta fuori scala (0x31)" }
+                else if nrc == "33" { nrcDesc = "Accesso di sicurezza richiesto (0x33)" }
+                DispatchQueue.main.async {
+                    self.actuatorStatusMessage = "ℹ️ Risposta ABS: \(nrcDesc)"
                 }
             }
             return

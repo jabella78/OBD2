@@ -274,6 +274,7 @@ struct CircularGaugeView: View {
 struct DashboardView: View {
     @ObservedObject var obd2Manager: OBD2Manager
     @ObservedObject var lang = LocalizationManager.shared
+    @State private var showingCSVShareSheet: Bool = false
     
     var logoImage: PlatformImage? {
         if let path = Bundle.main.path(forResource: "yadiag_logo", ofType: "png") {
@@ -307,7 +308,7 @@ struct DashboardView: View {
                             #endif
                         }
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("YaDiag")
+                            Text(AppEdition.appName)
                                 .font(.system(size: 28, weight: .black, design: .rounded))
                                 .foregroundStyle(
                                     LinearGradient(colors: [.cyan, .blue, .white], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -377,6 +378,31 @@ struct DashboardView: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(obd2Manager.isRecording ? Color.red : Color.secondary.opacity(0.3), lineWidth: 1)
                             )
+                        }
+                        
+                        // 3. Tasto Esporta CSV (visibile se è presente una sessione registrata)
+                        if let path = obd2Manager.currentTelemetryFilePath, !obd2Manager.isRecording {
+                            Button(action: {
+                                #if os(iOS)
+                                showingCSVShareSheet = true
+                                #elseif os(macOS)
+                                NSWorkspace.shared.open(path)
+                                #endif
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "square.and.arrow.up")
+                                        .font(.system(size: 13, weight: .bold))
+                                    Text("Esporta CSV")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 12)
+                                .background(Color.cyan.opacity(0.18))
+                                .foregroundColor(.cyan)
+                                .cornerRadius(10)
+                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.cyan.opacity(0.4), lineWidth: 1))
+                            }
                         }
                     }
                     
@@ -511,6 +537,13 @@ struct DashboardView: View {
                 .padding(.bottom, 20)
             }
         }
+        #if os(iOS)
+        .sheet(isPresented: $showingCSVShareSheet) {
+            if let path = obd2Manager.currentTelemetryFilePath {
+                ActivityView(activityItems: [path])
+            }
+        }
+        #endif
     }
 }
 
@@ -521,6 +554,10 @@ struct DiagnosticsView: View {
     @State private var showingAIConsentAlert: Bool = false
     @State private var pendingAIAction: (() -> Void)? = nil
     @State private var manualABSCodeInput: String = ""
+    @State private var showingServiceGuide: Bool = false
+    @State private var generatedPDFURL: URL? = nil
+    @State private var showingShareSheet: Bool = false
+    @State private var showingPDFExportSuccess: Bool = false
     
     let absHeaders = ["7E3", "7B0", "7E2", "760"]
     
@@ -708,6 +745,58 @@ struct DiagnosticsView: View {
                 }
                 .padding(.horizontal)
                 
+                // 5. Tasti Esporta Certificato Diagnostico PDF e Guida Reset Tagliando
+                HStack(spacing: 10) {
+                    Button(action: {
+                        if let pdfURL = DiagnosticReportService.shared.generatePDF(obd2Manager: obd2Manager) {
+                            generatedPDFURL = pdfURL
+                            #if os(iOS)
+                            showingShareSheet = true
+                            #elseif os(macOS)
+                            NSWorkspace.shared.open(pdfURL)
+                            showingPDFExportSuccess = true
+                            #endif
+                        }
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.text.fill")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.cyan)
+                            Text("Certificato PDF")
+                                .font(.system(size: 12, weight: .bold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                        }
+                        .padding(.horizontal, 6)
+                        .frame(maxWidth: .infinity, minHeight: 42)
+                        .background(Color.cyan.opacity(0.16))
+                        .foregroundColor(.cyan)
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.cyan.opacity(0.4), lineWidth: 1))
+                    }
+                    
+                    Button(action: {
+                        showingServiceGuide = true
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "wrench.and.screwdriver.fill")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.orange)
+                            Text("Guida Tagliando")
+                                .font(.system(size: 12, weight: .bold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                        }
+                        .padding(.horizontal, 6)
+                        .frame(maxWidth: .infinity, minHeight: 42)
+                        .background(Color.orange.opacity(0.16))
+                        .foregroundColor(.orange)
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.orange.opacity(0.4), lineWidth: 1))
+                    }
+                }
+                .padding(.horizontal)
+                
                 // Box Codici Errore Rilevati
                 VStack(alignment: .leading, spacing: 6) {
                     let errHeader = obd2Manager.selectedECU == .engine
@@ -783,6 +872,21 @@ struct DiagnosticsView: View {
             }
         } message: {
             Text("I dati tecnici diagnostici (codici guasto o telemetria della sessione) verranno trasmessi all'endpoint cloud di \(aiManager.selectedProvider.rawValue) per generare la valutazione meccanica specialistica.\n\nNessun dato personale o di identificazione veicolo/targa viene trasmesso.")
+        }
+        .sheet(isPresented: $showingServiceGuide) {
+            ServiceResetGuideView()
+        }
+        #if os(iOS)
+        .sheet(isPresented: $showingShareSheet) {
+            if let url = generatedPDFURL {
+                ActivityView(activityItems: [url])
+            }
+        }
+        #endif
+        .alert("Certificato PDF Generato", isPresented: $showingPDFExportSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Il certificato diagnostico in formato PDF è stato generato e aperto in Anteprima per la visualizzazione o la stampa.")
         }
     }
 }
@@ -1170,93 +1274,40 @@ struct TerminalView: View {
 struct SettingsView: View {
     @ObservedObject var aiManager: AIManager
     @ObservedObject var lang = LocalizationManager.shared
-    @ObservedObject var storeManager = StoreManager.shared
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                // Sezione Licenza In-App Purchase (StoreKit 2)
+                #if !os(macOS)
+                // Sezione Licenza YaDiag Pro (Edizione Completa Acquistata su App Store)
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Image(systemName: storeManager.isProUnlocked ? "crown.fill" : "lock.shield.fill")
-                            .foregroundColor(storeManager.isProUnlocked ? .yellow : .blue)
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(.yellow)
                             .font(.title3)
-                        Text(storeManager.isProUnlocked ? "Licenza YaDiag Pro: ATTIVA" : "Versione YaDiag Free")
+                        Text("Edizione YaDiag Pro: ATTIVA")
                             .font(.headline)
                             .bold()
                         Spacer()
-                        if storeManager.isProUnlocked {
-                            Text("Lifetime")
-                                .font(.caption2)
-                                .bold()
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(Color.yellow.opacity(0.2))
-                                .foregroundColor(.orange)
-                                .cornerRadius(6)
-                        }
+                        Text("Lifetime")
+                            .font(.caption2)
+                            .bold()
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.yellow.opacity(0.2))
+                            .foregroundColor(.orange)
+                            .cornerRadius(6)
                     }
                     
-                    if storeManager.isProUnlocked {
-                        Text("Tutte le funzioni professionali (Test Pompa ABS, Reset Corpi Farfallati ISC, Reset Lambda O2 e Telemetria AI avanzata) sono attive su questo dispositivo.")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("Sblocca l'accesso illimitato a test idraulico pompa ABS, reset autoadattativi ISC e O2, diagnosi codici ABS avanzata e report AI.")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        
-                        HStack(spacing: 12) {
-                            Button(action: {
-                                Task {
-                                    _ = await storeManager.purchasePro()
-                                }
-                            }) {
-                                HStack(spacing: 8) {
-                                    if storeManager.isPurchasing {
-                                        ProgressView().scaleEffect(0.8)
-                                    } else {
-                                        Image(systemName: "crown.fill")
-                                    }
-                                    Text("Acquista YaDiag Pro (29,99 €)")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.75)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                            }
-                            .disabled(storeManager.isPurchasing)
-                            
-                            Button(action: {
-                                Task {
-                                    await storeManager.restorePurchases()
-                                }
-                            }) {
-                                Text("Ripristina")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 10)
-                                    .background(Color.secondary.opacity(0.18))
-                                    .foregroundColor(.primary)
-                                    .cornerRadius(10)
-                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
-                            }
-                        }
-                        
-                        if let err = storeManager.purchaseErrorMessage {
-                            Text(err)
-                                .font(.caption2)
-                                .foregroundColor(.red)
-                        }
-                    }
+                    Text("Tutte le funzioni professionali (Cancellazione Guasti DTC, Test Idraulico Pompa ABS, Reset Corpi Farfallati ISC, Reset Lambda O2 e Diagnostica AI) sono attive su questa applicazione.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .padding(14)
-                .background(storeManager.isProUnlocked ? Color.yellow.opacity(0.08) : Color.blue.opacity(0.08))
+                .background(Color.yellow.opacity(0.08))
                 .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.yellow.opacity(0.3), lineWidth: 1))
+                #endif
                 
                 // Sezione 0: Selezione Lingua dell'Applicazione (Menu a Tendina)
                 VStack(alignment: .leading, spacing: 10) {
@@ -1450,6 +1501,7 @@ struct ModelCategory: Identifiable {
 struct InfoView: View {
     var onShowDisclaimer: (() -> Void)? = nil
     @ObservedObject var lang = LocalizationManager.shared
+    @State private var showingServiceGuide: Bool = false
     
     var categories: [ModelCategory] {
         switch lang.currentLanguage {
@@ -1717,7 +1769,7 @@ struct InfoView: View {
     }
     
     var infoSubtitle: String {
-        return "YaDiag Pro — Version 1.0.2 (Build 2026)"
+        return "\(AppEdition.appName) — Version 1.0.2 (Build 2026)"
     }
     
     var canOverviewTitle: String {
@@ -1772,7 +1824,8 @@ struct InfoView: View {
                 ("gauge.with.needle", "Live Telemetry: Engine RPM, Speed, Calculated Gear, TPS Throttle, Coolant Temp, Battery Voltage, O2 Lambda, IAT, MAP."),
                 ("engine.combustion", "Engine DTC Diagnostics: Read and clear fault codes (DTC P-codes) with technical explanations."),
                 ("shield.lefthalf.filled", "Advics ABS Advanced Diagnostics: KWP fault memory read (18 00 FF 00) with offline database of 23 active and historical codes."),
-                ("drop.degreesign", "Hydraulic ABS Pump Bleeding: Routine 0x70 (Codes 01 & 02) to verify solenoid valves and hydraulic brake lines."),
+                ("doc.text.fill", "PDF Diagnostic Report: Export and share official diagnostic certificate & maintenance inspection report."),
+                ("wrench.and.screwdriver.fill", "Service Reset Guide: Official dashboard button procedures to reset Oil Trip, Annual Service and V-Belt."),
                 ("fanblades", "Throttle Body Wear & Cleaning: Monitor ISC stepper motor micro-step compensation (Register 0x54) and Code 67 status."),
                 ("arrow.counterclockwise", "Adaptive Resets: Throttle bodies / ISC idle stepper reset (Code 67) and O2 lambda closed-loop trim reset (Code 87)."),
                 ("terminal", "Raw Serial Terminal: Low-level OBD2/CAN command line to manually send ELM327 and KWP2000 frames.")
@@ -1782,7 +1835,8 @@ struct InfoView: View {
                 ("gauge.with.needle", "Telemetria live: RPM, Velocità, Marcia calcolata, TPS, Temperatura liquido, Batteria, Tensione Lambda O2, IAT, MAP."),
                 ("engine.combustion", "Diagnosi Guasti Motore: Lettura e cancellazione codici DTC (DTC P-codes) con spiegazione contestuale."),
                 ("shield.lefthalf.filled", "Diagnosi Avanzata ABS Advics: Lettura memoria guasti KWP (18 00 FF 00) con database offline di 23 codici storici e attivi."),
-                ("drop.degreesign", "Test Idraulico & Spurgo Pompa ABS: Routine 0x70 (Cod. 01 e 02) per verifica elettrovalvole e circuito idraulico."),
+                ("doc.text.fill", "Certificato PDF & Perizia: Esportazione e condivisione report diagnostico con timbro data e stato di salute componenti."),
+                ("wrench.and.screwdriver.fill", "Guida Reset Tagliando: Procedure ufficiali manuali da cruscotto per azzeramento spia tagliando, Oil Trip e V-Belt."),
                 ("fanblades", "Stato Usura & Pulizia Corpi Farfallati: Monitoraggio compensazione micro-step ISC (Registro 0x54) e flag Cod. 67."),
                 ("arrow.counterclockwise", "Reset Adattivi: Reset corpi farfallati/minimo ISC (Cod. 67) e reset autoadattamento sonda lambda O2 (Cod. 87)."),
                 ("terminal", "Terminale Seriale Raw: Interfaccia a riga di comando OBD2/CAN per invio manuale di comandi ELM327/KWP2000.")
@@ -1792,7 +1846,8 @@ struct InfoView: View {
                 ("gauge.with.needle", "Télémétrie en direct : RPM, Vitesse, Rapport engagé, TPS, Température liquide, Batterie, Sonde Lambda O2, IAT, MAP."),
                 ("engine.combustion", "Diagnostic Moteur : Lecture et effacement des codes défaut (DTC) avec explications contextuelles."),
                 ("shield.lefthalf.filled", "Diagnostic Avancé ABS Advics : Lecture mémoire défauts KWP (18 00 FF 00) avec base de données hors ligne de 23 codes."),
-                ("drop.degreesign", "Purge Pompe & Test Hydraulique ABS : Routine 0x70 (Codes 01 et 02) pour tester électrovannes et circuit hydraulique."),
+                ("doc.text.fill", "Rapport de Diagnostic PDF : Exportation et partage du certificat d'inspection et de maintenance officiel."),
+                ("wrench.and.screwdriver.fill", "Guide Reset Entretien : Procédures manuelles au compteur pour réinitialiser Oil Trip, vidange et V-Belt."),
                 ("fanblades", "Usure et Nettoyage Corps Papillon : Surveillance adaptation moteur pas-à-pas ISC (Registre 0x54) et Code 67."),
                 ("arrow.counterclockwise", "Réinitialisations Adaptatives : Reset ralenti ISC (Code 67) et reset trims sonde Lambda O2 (Code 87)."),
                 ("terminal", "Terminal Série Raw : Ligne de commande OBD2/CAN pour envoi manuel de trames ELM327/KWP2000.")
@@ -1802,7 +1857,8 @@ struct InfoView: View {
                 ("gauge.with.needle", "Telemetría en vivo: RPM, Velocidad, Marcha engranada, TPS, Temperatura refrigerante, Batería, Sonda Lambda O2, IAT, MAP."),
                 ("engine.combustion", "Diagnóstico de Motor: Lectura y borrado de averías (DTC) con explicaciones técnicas detalladas."),
                 ("shield.lefthalf.filled", "Diagnóstico Avanzado ABS Advics: Lectura memoria KWP (18 00 FF 00) con base offline de 23 códigos."),
-                ("drop.degreesign", "Purga y Prueba Hidráulica ABS: Rutina 0x70 (Códigos 01 y 02) para comprobar electroválvulas y latiguillos."),
+                ("doc.text.fill", "Certificado de Diagnóstico PDF: Exportación y compartición de informe técnico y peritaje oficial."),
+                ("wrench.and.screwdriver.fill", "Guía Reset Mantenimiento: Pasos oficiales desde el cuadro de instrumentos para reiniciar Oil Trip y correa V-Belt."),
                 ("fanblades", "Estado y Limpieza Cuerpos de Mariposa: Monitorización de adaptación motor paso a paso ISC (Registro 0x54) y Código 67."),
                 ("arrow.counterclockwise", "Reinicios Adaptativos: Reset de ralentí ISC (Código 67) y reset de trims de sonda Lambda O2 (Código 87)."),
                 ("terminal", "Terminal Serie Raw: Consola de comandos OBD2/CAN para envío manual de tramas ELM327/KWP2000.")
@@ -1812,7 +1868,8 @@ struct InfoView: View {
                 ("gauge.with.needle", "Live-Telemetrie: Drehzahl, Geschwindigkeit, Gangberechnung, TPS, Kühlmitteltemp., Batteriespannung, Lambdasonde, IAT, MAP."),
                 ("engine.combustion", "Motor-Fehlerdiagnose: Auslesen und Löschen von DTC-Fehlercodes mit technischen Erläuterungen."),
                 ("shield.lefthalf.filled", "Erweiterte Advics ABS-Diagnose: KWP-Fehlerspeicher (18 00 FF 00) mit Offline-Datenbank für 23 Codes."),
-                ("drop.degreesign", "ABS-Pumpenentlüftung & Hydrauliktest: Routine 0x70 (Codes 01 und 02) zur Prüfung von Ventilen und Leitungen."),
+                ("doc.text.fill", "PDF-Diagnosebericht: Export und Weitergabe des offiziellen Inspektions- und Wartungszertifikats."),
+                ("wrench.and.screwdriver.fill", "Service-Reset-Anleitung: Manuelle Cockpit-Abläufe zum Zurücksetzen von Oil Trip, Wartung und V-Belt."),
                 ("fanblades", "Drosselklappen-Verschleiß & Reinigung: Überwachung der ISC-Schrittmotor-Kompensation (Register 0x54) und Code 67."),
                 ("arrow.counterclockwise", "Adaptive Resets: Reset Drosselklappen/Leerlauf ISC (Code 67) und Reset der Lambdasonden-Trims (Code 87)."),
                 ("terminal", "Raw Serielles Terminal: OBD2/CAN-Befehlszeile zum manuellen Senden von ELM327- und KWP2000-Befehlen.")
@@ -1942,10 +1999,54 @@ struct InfoView: View {
                 .background(Color.cyan.opacity(0.08))
                 .cornerRadius(12)
                 
-                // Sezione Modelli Supportati
+                // Sezione Modelli Supportati & Compatibilità Graduata
                 Text(modelsSectionTitle)
                     .font(.title3)
                     .bold()
+                
+                // Card Trasparenza & Disclaimer Compatibilità Funzioni Avanzate
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Image(systemName: "shield.lefthalf.filled")
+                            .foregroundColor(.orange)
+                        Text("Nota di Trasparenza & Compatibilità")
+                            .font(.caption)
+                            .bold()
+                            .foregroundColor(.orange)
+                    }
+                    Text("YaDiag Pro è un software diagnostico indipendente. Le funzionalità diagnostiche DTC (Mode 03/04 per Motore ed errore KWP 0x18 per ABS) e telemetria operano su standard CAN-bus. I reset adattivi (ISC Cod. 67 e Sonda Lambda Cod. 87) sono certificati sulla piattaforma CP3 Euro 4; per gli altri modelli l'accesso a specifici registri interni dipende dal firmware centralina Denso installato. Le procedure di azzeramento spia tagliando (chiave/olio) sono manuali da cruscotto e consultabili nella guida dedicata.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(12)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(10)
+                
+                // Bottone Accesso Rapido Guida Reset Tagliando da Cruscotto
+                Button(action: {
+                    showingServiceGuide = true
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "wrench.and.screwdriver.fill")
+                            .foregroundColor(.orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Guida Ufficiale Reset Tagliando (da cruscotto)")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Procedure manuali per azzerare Oil Trip, spia chiave e V-Belt per tutti i modelli")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(12)
+                    .background(Color.secondary.opacity(0.12))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.orange.opacity(0.3), lineWidth: 1))
+                }
                 
                 VStack(spacing: 14) {
                     ForEach(categories) { cat in
@@ -1973,17 +2074,19 @@ struct InfoView: View {
                             
                             ForEach(cat.models, id: \.self) { model in
                                 HStack {
-                                    let isVerified = model.contains("Tracer 900") || model.contains("MT-09")
-                                    Image(systemName: isVerified ? "checkmark.seal.fill" : "checkmark.circle.fill")
-                                        .foregroundColor(isVerified ? .cyan : .green)
+                                    let isCertified = model.contains("Tracer 900") || (model.contains("MT-09") && !model.contains("Tracer 9"))
+                                    let isKwpEuro4 = !model.contains("Tracer 9") && (cat.badgeColor == .blue || cat.badgeColor == .purple || cat.badgeColor == .cyan)
+                                    
+                                    Image(systemName: isCertified ? "checkmark.seal.fill" : (isKwpEuro4 ? "checkmark.circle.fill" : "circle.fill"))
+                                        .foregroundColor(isCertified ? .green : (isKwpEuro4 ? .cyan : .blue))
                                         .font(.caption)
                                     Text(model)
                                         .font(.caption)
                                         .bold()
                                     Spacer()
-                                    Text(isVerified ? "✅ Verificato" : "🧪 Compatibile CAN")
-                                        .font(.system(size: 9))
-                                        .foregroundColor(isVerified ? .cyan : .secondary)
+                                    Text(isCertified ? "🟢 Certificato 100%" : (isKwpEuro4 ? "🟡 Compatibile KWP" : "🔵 Standard OBD2"))
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(isCertified ? .green : (isKwpEuro4 ? .cyan : .blue))
                                 }
                             }
                         }
@@ -2098,6 +2201,9 @@ struct InfoView: View {
                 .cornerRadius(12)
             }
             .padding()
+        }
+        .sheet(isPresented: $showingServiceGuide) {
+            ServiceResetGuideView()
         }
     }
 }

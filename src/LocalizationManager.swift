@@ -108,6 +108,20 @@ public class LocalizationManager: ObservableObject {
         ],
         
         // Dashboard
+        "dash_live_resume": [
+            .italian: "Avvia Live",
+            .english: "Start Live",
+            .french: "Démarrer Live",
+            .spanish: "Iniciar Live",
+            .german: "Live Starten"
+        ],
+        "dash_live_pause": [
+            .italian: "Pausa Live",
+            .english: "Pause Live",
+            .french: "Pause Live",
+            .spanish: "Pausar Live",
+            .german: "Live Pausieren"
+        ],
         "dash_subtitle": [
             .italian: "PRO TELEMETRY & DIAG • CAN-BUS 500 KBPS",
             .english: "PRO TELEMETRY & DIAG • CAN-BUS 500 KBPS",
@@ -413,6 +427,104 @@ public class LocalizationManager: ObservableObject {
             .spanish: "Cuando está activo muestra cualquier dispositivo BLE genérico (ELM327). Cuando está desactivado filtra solo adaptadores certificados de alto rendimiento (UniCarScan, vLinker, OBDLink, Veepeak, Carista).",
             .german: "Wenn aktiviert, zeigt es beliebige generische BLE-Geräte (ELM327). Wenn deaktiviert, werden nur zertifizierte Hochleistungsadapter gefiltert (UniCarScan, vLinker, OBDLink, Veepeak, Carista)."
         ],
+        "ble_simulator_card_title": [
+            .italian: "Simulatore OBD2 Virtuale (Offline)",
+            .english: "Virtual OBD2 Simulator (Offline)",
+            .french: "Simulateur OBD2 Virtuel (Hors ligne)",
+            .spanish: "Simulador OBD2 Virtual (Offline)",
+            .german: "Virtueller OBD2-Simulator (Offline)"
+        ],
+        "ble_sim_active_banner": [
+            .italian: "SIMULATORE BANCO PROVA ATTIVO",
+            .english: "BENCH TEST SIMULATOR ACTIVE",
+            .french: "SIMULATEUR BANC D'ESSAI ACTIF",
+            .spanish: "SIMULADOR BANCO DE PRUEBAS ACTIVO",
+            .german: "PRÜFSTAND-SIMULATOR AKTIV"
+        ],
+        "ble_simulator_card_desc": [
+            .italian: "Testa tutte le funzionalità dell'app senza moto né adattatore fisico.",
+            .english: "Test all app features without motorcycle or physical adapter.",
+            .french: "Testez toutes les fonctionnalités sans moto ni adaptateur physique.",
+            .spanish: "Prueba todas las funciones de la app sin moto ni adaptador físico.",
+            .german: "Alle App-Funktionen ohne Motorrad oder physischen Adapter testen."
+        ],
+        "ble_simulator_connect": [
+            .italian: "Connetti Simulatore Virtuale",
+            .english: "Connect Virtual Simulator",
+            .french: "Connecter le Simulateur Virtuel",
+            .spanish: "Conectar Simulador Virtual",
+            .german: "Virtuellen Simulator Verbinden"
+        ],
+        "ble_simulator_disconnect": [
+            .italian: "Disconnetti Simulatore",
+            .english: "Disconnect Simulator",
+            .french: "Déconnecter le Simulateur",
+            .spanish: "Desconectar Simulador",
+            .german: "Simulator Trennen"
+        ],
+        "ble_bench_mode_title": [
+            .italian: "Simulatore Banco Prova (Demo)",
+            .english: "Bench Test Simulator (Demo)",
+            .french: "Simulateur Banc d'Essai (Démo)",
+            .spanish: "Simulador Banco de Pruebas (Demo)",
+            .german: "Prüfstand-Simulator (Demo)"
+        ],
+        "ble_bench_mode_active": [
+            .italian: "Dati virtuali attivi (10 Hz)",
+            .english: "Virtual live data active (10 Hz)",
+            .french: "Données virtuelles actives (10 Hz)",
+            .spanish: "Datos virtuales activos (10 Hz)",
+            .german: "Virtuelle Daten aktiv (10 Hz)"
+        ],
+        "ble_bench_mode_idle": [
+            .italian: "Modalità banco dinamico",
+            .english: "Dynamic bench mode",
+            .french: "Mode banc d'essai dynamique",
+            .spanish: "Modo banco dinámico",
+            .german: "Dynamischer Prüfstandmodus"
+        ],
+        "ble_no_devices": [
+            .italian: "Nessun adattatore OBD2 rilevato nelle vicinanze.",
+            .english: "No OBD2 adapters detected nearby.",
+            .french: "Aucun adaptateur OBD2 détecté à proximité.",
+            .spanish: "No se detectaron adaptadores OBD2 cercanos.",
+            .german: "Keine OBD2-Adapter in der Nähe gefunden."
+        ],
+        "ble_insert_hint": [
+            .italian: "Inserisci l'adattatore nella presa diagnostica della moto con il quadro acceso (Key ON).",
+            .english: "Plug adapter into bike diagnostic port with ignition turned ON (Key ON).",
+            .french: "Branchez l'adaptateur sur la prise diag de la moto avec le contact allumé (Key ON).",
+            .spanish: "Conecta el adaptador a la toma de diagnosis de la moto con el contacto dado (Key ON).",
+            .german: "Adapter bei eingeschalteter Zündung (Key ON) an die Diagnosebuchse anschließen."
+        ],
+        "ble_certified_badge": [
+            .italian: "Certificato e Raccomandato",
+            .english: "Certified & Recommended",
+            .french: "Certifié et Recommandé",
+            .spanish: "Certificado y Recomendado",
+            .german: "Zertifiziert & Empfohlen"
+        ],
+        "ble_generic_badge": [
+            .italian: "Compatibilità generica ELM327",
+            .english: "Generic ELM327 Compatibility",
+            .french: "Compatibilité générique ELM327",
+            .spanish: "Compatibilidad genérica ELM327",
+            .german: "Generische ELM327-Kompatibilität"
+        ],
+        "ble_device_default": [
+            .italian: "Dispositivo OBD",
+            .english: "OBD Device",
+            .french: "Appareil OBD",
+            .spanish: "Dispositivo OBD",
+            .german: "OBD-Gerät"
+        ],
+        "ble_simulated_protocol": [
+            .italian: "Protocollo CAN Bus 500k ISO 15765-4 simulato (Nessun Bluetooth richiesto)",
+            .english: "Simulated 500k ISO 15765-4 CAN Bus Protocol (No Bluetooth required)",
+            .french: "Protocole CAN Bus 500k ISO 15765-4 simulé (Sans Bluetooth requis)",
+            .spanish: "Protocolo CAN Bus 500k ISO 15765-4 simulado (Sin Bluetooth requerido)",
+            .german: "Simuliertes 500k ISO 15765-4 CAN-Bus-Protokoll (Kein Bluetooth erforderlich)"
+        ],
         
         // Terminal
         "term_title": [
@@ -443,6 +555,13 @@ public class LocalizationManager: ObservableObject {
             .spanish: "Limpiar Consola",
             .german: "Konsole Leeren"
         ],
+        "term_danger_alert": [
+            .italian: "Attenzione: il comando inserito interagisce con funzioni critiche. L'invio di sequenze errate potrebbe provocare errori permanenti o anomalie di funzionamento della centralina.",
+            .english: "Warning: The entered command interacts with critical ECU routines. Sending incorrect sequences may cause permanent ECU errors or malfunctions.",
+            .french: "Attention : La commande saisie interagit avec des fonctions critiques. L'envoi de séquences incorrectes peut provoquer des erreurs permanentes.",
+            .spanish: "Atención: El comando ingresado interactúa con funciones críticas. Enviar secuencias incorrectas puede provocar anomalías permanentes.",
+            .german: "Achtung: Der eingegebene Befehl interagiert mit kritischen Steuergerätefunktionen. Falsche Sequenzen können dauerhafte Fehler verursachen."
+        ],
         
         // Actuators
         "act_title": [
@@ -459,20 +578,6 @@ public class LocalizationManager: ObservableObject {
             .spanish: "Unidad de Control",
             .german: "Steuergerät-Auswahl"
         ],
-        "act_cat_engine": [
-            .italian: "Motore (FI ECU — ISC & Sonda O2)",
-            .english: "Engine (FI ECU — ISC & O2 Sensor)",
-            .french: "Moteur (FI ECU — ISC & Sonde O2)",
-            .spanish: "Motor (FI ECU — ISC y Sonda O2)",
-            .german: "Motor (FI ECU — ISC & Lambdasonde)"
-        ],
-        "act_cat_abs": [
-            .italian: "Unità Idraulica ABS",
-            .english: "ABS Hydraulic Unit",
-            .french: "Unité Hydraulique ABS",
-            .spanish: "Unidad Hidráulica ABS",
-            .german: "ABS-Hydraulikeinheit"
-        ],
         "act_danger_title": [
             .italian: "PERICOLO: MOTORE IN MOTO O RUOTE IN MOVIMENTO!",
             .english: "DANGER: ENGINE RUNNING OR WHEELS IN MOTION!",
@@ -481,11 +586,11 @@ public class LocalizationManager: ObservableObject {
             .german: "GEFAHR: MOTOR LÄUFT ODER RÄDER DREHEN SICH!"
         ],
         "act_danger_msg": [
-            .italian: "I reset adattivi e i test idraulici sono disabilitati mentre il motore gira. Spegni il motore e lascia solo il quadro acceso (Key ON).",
-            .english: "Adaptive resets and hydraulic tests are disabled while the engine runs. Stop engine and keep ignition ON.",
-            .french: "Les réinitialisations adaptatives et tests hydrauliques sont désactivés pendant que le moteur tourne. Coupez le moteur et laissez le contact.",
-            .spanish: "Los reinicios adaptativos y pruebas hidráulicas están deshabilitados con el motor encendido. Apaga el motor y mantén el contacto.",
-            .german: "Adaptive Resets und Hydrauliktests sind bei laufendem Motor gesperrt. Motor ausschalten und nur Zündung eingeschaltet lassen."
+            .italian: "I reset adattivi sono disabilitati mentre il motore gira. Spegni il motore e lascia solo il quadro acceso (Key ON).",
+            .english: "Adaptive resets are disabled while the engine runs. Stop engine and keep ignition ON.",
+            .french: "Les réinitialisations adaptatives sont désactivées pendant que le moteur tourne. Coupez le moteur et laissez le contact.",
+            .spanish: "Los reinicios adaptativos están deshabilitados con el motor encendido. Apaga el motor y mantén el contacto.",
+            .german: "Adaptive Resets sind bei laufendem Motor gesperrt. Motor ausschalten und nur Zündung eingeschaltet lassen."
         ],
         "act_ready_engine": [
             .italian: "Motore fermo. Funzioni di verifica e reset adattivo FI ECU (7E0) sbloccate.",
@@ -493,13 +598,6 @@ public class LocalizationManager: ObservableObject {
             .french: "Moteur arrêté. Fonctions de contrôle et réinitialisation adaptative FI ECU (7E0) déverrouillées.",
             .spanish: "Motor apagado. Funciones de verificación y reinicio adaptativo FI ECU (7E0) desbloqueadas.",
             .german: "Motor aus. FI ECU (7E0) Prüf- und adaptive Resetfunktionen freigeschaltet."
-        ],
-        "act_ready_abs": [
-            .italian: "Motore fermo e ruote ferme. Test Unità Idraulica ABS sbloccati.",
-            .english: "Engine and wheels stopped. ABS Hydraulic Unit tests unlocked.",
-            .french: "Moteur et roues à l'arrêt. Tests de l'unité hydraulique ABS déverrouillés.",
-            .spanish: "Motor y ruedas detenidas. Pruebas de la unidad hidráulica ABS desbloqueadas.",
-            .german: "Motor und Räder stillstehend. Tests der ABS-Hydraulikeinheit freigeschaltet."
         ],
         "act_start_btn": [
             .italian: "Avvia Procedura",
@@ -515,50 +613,22 @@ public class LocalizationManager: ObservableObject {
             .spanish: "Ejecutando...",
             .german: "Wird ausgeführt..."
         ],
-        "act_abs_running_title": [
-            .italian: "TEST POMPA ABS IN CORSO...",
-            .english: "ABS PUMP TEST RUNNING...",
-            .french: "TEST POMPE ABS EN COURS...",
-            .spanish: "TEST BOMBA ABS EN CURSO...",
-            .german: "ABS-PUMPENTEST LÄUFT..."
-        ],
-        "act_abs_running_desc": [
-            .italian: "Tieni saldamente premuti LEVA ANTERIORE e PEDALE POSTERIORE!",
-            .english: "Firmly squeeze FRONT LEVER and depress REAR PEDAL!",
-            .french: "Serrez fermement le LEVIER AVANT et la PÉDALE ARRIÈRE !",
-            .spanish: "¡Mantén presionados con firmeza la MANETA DELANTERA y el PEDAL TRASERO!",
-            .german: "VORDEREN HEBEL und HINTERES PEDAL fest gedrückt halten!"
-        ],
-        "act_abs_stop_btn": [
-            .italian: "Interrompi Test",
-            .english: "Stop Test",
-            .french: "Arrêter le Test",
-            .spanish: "Detener Test",
-            .german: "Test Abbrechen"
-        ],
-        "act_abs_alert_title": [
-            .italian: "Pronto per il Test Idraulico ABS?",
-            .english: "Ready for ABS Hydraulic Test?",
-            .french: "Prêt pour le Test Hydraulique ABS ?",
-            .spanish: "¿Listo para la Prueba Hidráulica ABS?",
-            .german: "Bereit für den ABS-Hydrauliktest?"
-        ],
-        "act_abs_alert_confirm": [
-            .italian: "Ho capito, Avvia il Test (12s)!",
-            .english: "Understood, Start Test (12s)!",
-            .french: "Compris, Démarrer le Test (12s) !",
-            .spanish: "¡Entendido, Iniciar Test (12s)!",
-            .german: "Verstanden, Test Starten (12s)!"
-        ],
-        "act_abs_alert_body": [
-            .italian: "⚠️ PROCEDURA UFFICIALE YAMAHA (Manuale pag. 4-65/4-67):\n\n1. Moto sul cavalletto centrale, motore spento, quadro su ON.\n2. Batteria sopra i 12.8V.\n3. PREMI E TIENI PREMUTI SALDAMENTE la LEVA del freno anteriore e il PEDALE del freno posteriore.\n4. Mantieni la pressione costante per tutti i 12 secondi del countdown.\n\nIl modulatore ABS attende 1 secondo di pressione simultanea, poi aziona la pompa e i solenoidi generando la pulsazione nell'ordine:\n1° Leva Anteriore\n2° Pedale Posteriore\n3° Leva Anteriore.",
-            .english: "⚠️ OFFICIAL YAMAHA PROCEDURE (Manual p. 4-65/4-67):\n\n1. Bike on centerstand, engine off, ignition ON.\n2. Battery above 12.8V.\n3. FIRMLY SQUEEZE the front brake lever and DEPRESS the rear brake pedal.\n4. Hold pressure steadily for all 12 seconds of the countdown.\n\nThe ABS hydraulic unit waits 1 second of simultaneous pressure, then cycles the pump and solenoid valves generating pulses in order:\n1st Front Lever\n2nd Rear Pedal\n3rd Front Lever.",
-            .french: "⚠️ PROCÉDURE OFFICIELLE YAMAHA (Manuel p. 4-65/4-67) :\n\n1. Moto sur la béquille centrale, moteur coupé, contact sur ON.\n2. Batterie supérieure à 12,8V.\n3. SERREZ FERMEMENT le levier avant et la pédale arrière.\n4. Maintenez la pression pendant les 12 secondes du compte à rebours.\n\nL'unité ABS attend 1 seconde de pression simultanée, puis active la pompe et les électrovannes avec pulsations dans l'ordre :\n1° Levier Avant\n2° Pédale Arrière\n3° Levier Avant.",
-            .spanish: "⚠️ PROCEDIMIENTO OFICIAL YAMAHA (Manual pág. 4-65/4-67):\n\n1. Moto en caballete central, motor apagado, contacto en ON.\n2. Batería superior a 12,8V.\n3. APRIETA CON FUERZA la maneta delantera y el pedal trasero.\n4. Mantén la presión durante los 12 segundos de la cuenta atrás.\n\nEl modulador ABS espera 1 segundo de presión simultánea y luego acciona la bomba y las electroválvulas pulsando en orden:\n1° Maneta Delantera\n2° Pedal Trasero\n3° Maneta Delantera.",
-            .german: "⚠️ OFFIZIELLER YAMAHA-ABLAUF (Handbuch S. 4-65/4-67):\n\n1. Motorrad auf Hauptständer, Motor aus, Zündung AN.\n2. Batteriespannung über 12,8V.\n3. Bremshebel vorne und Bremspedal hinten FEST GEDRÜCKT HALTEN.\n4. Druck während des gesamten 12-Sekunden-Countdowns halten.\n\nDas ABS-Aggregat wartet 1 Sekunde gleichzeitigen Druck ab und steuert dann Pumpe und Magnetventile in dieser Reihenfolge an:\n1. Handbremshebel\n2. Fußbremspedal\n3. Handbremshebel."
+        "act_status_ready": [
+            .italian: "Pronto. Seleziona una procedura per iniziare il reset.",
+            .english: "Ready. Select an adaptive routine to start reset procedure.",
+            .french: "Prêt. Sélectionnez une routine pour lancer la réinitialisation.",
+            .spanish: "Listo. Selecciona una rutina para iniciar el reinicio.",
+            .german: "Bereit. Wählen Sie eine adaptive Routine, um den Reset zu starten."
         ],
         
         // Setup (Language + AI)
+        "setup_pro_features_active": [
+            .italian: "Tutte le funzioni professionali (Cancellazione Guasti DTC, Guida Reset Tagliando, Certificato Diagnostico PDF, Reset Corpi Farfallati ISC, Reset Lambda O2 e Diagnostica AI) sono attive su questa applicazione.",
+            .english: "All professional features (DTC Fault Clearing, Dashboard Service Reset Guide, PDF Diagnostic Reports, ISC Throttle Body Reset, Lambda O2 Reset, and AI Diagnostics) are active in this application.",
+            .french: "Toutes les fonctions professionnelles (Effacement DTC, Guide Reset Vidange, Certificats PDF, Réinitialisation ISC/Lambda, et Diagnostic IA) sont actives.",
+            .spanish: "Todas las funciones profesionales (Borrado de DTC, Guía Reset Aceite, Certificados PDF, Reinicios ISC/Lambda y Diagnóstico IA) están activas.",
+            .german: "Alle professionellen Funktionen (DTC-Löschen, Service-Reset-Anleitung, PDF-Prüfbericht, ISC-/Lambda-Reset und KI-Diagnose) sind in dieser Version aktiv."
+        ],
         "setup_lang_section": [
             .italian: "Lingua dell'Applicazione",
             .english: "Application Language",

@@ -38,9 +38,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     var connectedDeviceName: String {
         if isVirtualSimulator {
-            return "Adattatore Virtuale UniCarScan (Simulatore)"
+            switch LocalizationManager.shared.currentLanguage {
+            case .italian: return "Adattatore Virtuale UniCarScan (Simulatore)"
+            case .french: return "Adaptateur Virtuel UniCarScan (Simulateur)"
+            case .spanish: return "Adaptador Virtual UniCarScan (Simulador)"
+            case .german: return "Virtueller UniCarScan-Adapter (Simulator)"
+            case .english: return "Virtual UniCarScan Adapter (Simulator)"
+            }
         }
-        return connectedPeripheral?.name ?? "Adattatore OBD"
+        return connectedPeripheral?.name ?? LocalizationManager.shared.t("ble_device_default")
     }
 
     static let certifiedKeywords = [

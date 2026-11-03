@@ -1,0 +1,89 @@
+{
+  "" : {
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/YamahaOBD2-primary.dia",
+    "emit-module-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/YamahaOBD2-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/YamahaOBD2-primary-emit-module.dia",
+    "pch" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/YamahaOBD2-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/YamahaOBD2-primary.swiftdeps"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/DerivedSources/resource_bundle_accessor.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/resource_bundle_accessor~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/AIManager.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/AIManager~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/ActuatorTestView.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ActuatorTestView~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/App.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/App~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/BLEManager.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/BLEManager~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/ContentView.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/OBD2Manager.swift" : {
+    "const-values" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.swiftconstvalues",
+    "dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.d",
+    "diagnostics" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.dia",
+    "index-unit-output-path" : "/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.o",
+    "llvm-bc" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.bc",
+    "object" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.o",
+    "swift-dependencies" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager.swiftdeps",
+    "swiftmodule" : "/Users/jabella78/Documents/OBD2/YamahaOBD2.swiftpm/.build/DerivedData/Build/Intermediates.noindex/YamahaOBD2.build/Debug-iphoneos/YamahaOBD2.build/Objects-normal/arm64/OBD2Manager~partial.swiftmodule"
+  }
+}
