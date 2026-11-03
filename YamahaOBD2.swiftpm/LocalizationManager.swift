@@ -1,0 +1,825 @@
+import Foundation
+import SwiftUI
+
+public enum AppLanguage: String, CaseIterable, Identifiable {
+    case italian = "it"
+    case english = "en"
+    case french = "fr"
+    case spanish = "es"
+    case german = "de"
+    
+    public var id: String { rawValue }
+    
+    public var displayName: String {
+        switch self {
+        case .italian: return "Italiano"
+        case .english: return "English"
+        case .french: return "Français"
+        case .spanish: return "Español"
+        case .german: return "Deutsch"
+        }
+    }
+    
+    public var flag: String {
+        switch self {
+        case .italian: return "🇮🇹"
+        case .english: return "🇬🇧"
+        case .french: return "🇫🇷"
+        case .spanish: return "🇪🇸"
+        case .german: return "🇩🇪"
+        }
+    }
+}
+
+public class LocalizationManager: ObservableObject {
+    public static let shared = LocalizationManager()
+    
+    @Published public var currentLanguage: AppLanguage = .english {
+        didSet {
+            UserDefaults.standard.set(currentLanguage.rawValue, forKey: "AppLanguage_v3")
+        }
+    }
+    
+    public init() {
+        if let saved = UserDefaults.standard.string(forKey: "AppLanguage_v3"),
+           let lang = AppLanguage(rawValue: saved) {
+            self.currentLanguage = lang
+        } else {
+            // Default obbligatorio all'installazione: INGLESE (English)
+            self.currentLanguage = .english
+        }
+    }
+    
+    public func t(_ key: String) -> String {
+        return localizedStrings[key]?[currentLanguage] ?? localizedStrings[key]?[.english] ?? key
+    }
+    
+    // MARK: - Dizionario Completo Multi-lingua (IT, EN, FR, ES, DE)
+    private let localizedStrings: [String: [AppLanguage: String]] = [
+        // Tabs
+        "tab_dash": [
+            .italian: "Dash",
+            .english: "Dash",
+            .french: "Tableau",
+            .spanish: "Tablero",
+            .german: "Cockpit"
+        ],
+        "tab_dtc": [
+            .italian: "DTC",
+            .english: "DTC",
+            .french: "DTC",
+            .spanish: "DTC",
+            .german: "DTC"
+        ],
+        "tab_term": [
+            .italian: "Terminale",
+            .english: "Terminal",
+            .french: "Terminal",
+            .spanish: "Terminal",
+            .german: "Terminal"
+        ],
+        "tab_ble": [
+            .italian: "Bluetooth",
+            .english: "Bluetooth",
+            .french: "Bluetooth",
+            .spanish: "Bluetooth",
+            .german: "Bluetooth"
+        ],
+        "tab_actuators": [
+            .italian: "Test Attivi",
+            .english: "Active Tests",
+            .french: "Tests Actifs",
+            .spanish: "Pruebas Activas",
+            .german: "Aktive Tests"
+        ],
+        "tab_setup": [
+            .italian: "Setup",
+            .english: "Setup",
+            .french: "Configuration",
+            .spanish: "Ajustes",
+            .german: "Einstellungen"
+        ],
+        "tab_info": [
+            .italian: "Info & Modelli",
+            .english: "Info & Models",
+            .french: "Info & Modèles",
+            .spanish: "Info y Modelos",
+            .german: "Info & Modelle"
+        ],
+        
+        // Dashboard
+        "dash_subtitle": [
+            .italian: "PRO TELEMETRY & DIAG • CAN-BUS 500 KBPS",
+            .english: "PRO TELEMETRY & DIAG • CAN-BUS 500 KBPS",
+            .french: "TÉLÉMÉTRIE PRO & DIAG • CAN-BUS 500 KBPS",
+            .spanish: "TELEMETRÍA PRO Y DIAG • CAN-BUS 500 KBPS",
+            .german: "PROFI-TELEMETRIE & DIAGNOSE • CAN-BUS 500 KBPS"
+        ],
+        "ecu_connected": [
+            .italian: "Centralina Connessa",
+            .english: "ECU Connected",
+            .french: "Calculateur Connecté",
+            .spanish: "Centralita Conectada",
+            .german: "Steuergerät Verbunden"
+        ],
+        "ecu_disconnected": [
+            .italian: "Disconnesso",
+            .english: "Disconnected",
+            .french: "Déconnecté",
+            .spanish: "Desconectado",
+            .german: "Getrennt"
+        ],
+        "rpm_label": [
+            .italian: "Giri Motore",
+            .english: "Engine RPM",
+            .french: "Régime Moteur",
+            .spanish: "RPM Motor",
+            .german: "Motordrehzahl"
+        ],
+        "speed_label": [
+            .italian: "Velocità",
+            .english: "Speed",
+            .french: "Vitesse",
+            .spanish: "Velocidad",
+            .german: "Geschwindigkeit"
+        ],
+        "gear_label": [
+            .italian: "Marce",
+            .english: "Gear",
+            .french: "Rapport",
+            .spanish: "Marcha",
+            .german: "Gang"
+        ],
+        "neutral_label": [
+            .italian: "Folle",
+            .english: "Neutral",
+            .french: "Point Mort",
+            .spanish: "Punto Muerto",
+            .german: "Leerlauf"
+        ],
+        "coolant_temp": [
+            .italian: "Temperatura Liquido",
+            .english: "Coolant Temp",
+            .french: "Temp. Liquide",
+            .spanish: "Temp. Refrigerante",
+            .german: "Kühlmitteltemp."
+        ],
+        "throttle_tps": [
+            .italian: "Apertura Farfalla (TPS)",
+            .english: "Throttle Position (TPS)",
+            .french: "Ouverture Papillon (TPS)",
+            .spanish: "Apertura Mariposa (TPS)",
+            .german: "Drosselklappe (TPS)"
+        ],
+        "battery_volt": [
+            .italian: "Tensione Batteria",
+            .english: "Battery Voltage",
+            .french: "Tension Batterie",
+            .spanish: "Voltaje Batería",
+            .german: "Batteriespannung"
+        ],
+        "lambda_afr": [
+            .italian: "Sonda Lambda / AFR",
+            .english: "O2 Sensor / AFR",
+            .french: "Sonde Lambda / AFR",
+            .spanish: "Sonda Lambda / AFR",
+            .german: "Lambdasonde / AFR"
+        ],
+        "mix_stoich": [
+            .italian: "Stechiometrico (14.7 AFR)",
+            .english: "Stoichiometric (14.7 AFR)",
+            .french: "Stœchiométrique (14.7 AFR)",
+            .spanish: "Estequiométrico (14.7 AFR)",
+            .german: "Stöchiometrisch (14.7 AFR)"
+        ],
+        "mix_lean": [
+            .italian: "Miscela Magra",
+            .english: "Lean Mixture",
+            .french: "Mélange Pauvre",
+            .spanish: "Mezcla Pobre",
+            .german: "Mageres Gemisch"
+        ],
+        "mix_rich": [
+            .italian: "Miscela Grassa",
+            .english: "Rich Mixture",
+            .french: "Mélange Riche",
+            .spanish: "Mezcla Rica",
+            .german: "Fettes Gemisch"
+        ],
+        "start_csv": [
+            .italian: "Avvia Registrazione CSV",
+            .english: "Start CSV Recording",
+            .french: "Démarrer Enregistrement CSV",
+            .spanish: "Iniciar Grabación CSV",
+            .german: "CSV-Aufnahme Starten"
+        ],
+        "stop_csv": [
+            .italian: "Ferma Registrazione CSV",
+            .english: "Stop CSV Recording",
+            .french: "Arrêter Enregistrement CSV",
+            .spanish: "Detener Grabación CSV",
+            .german: "CSV-Aufnahme Stoppen"
+        ],
+        "telemetry_start": [
+            .italian: "Avvia Telemetria Live",
+            .english: "Start Live Telemetry",
+            .french: "Démarrer Télémétrie",
+            .spanish: "Iniciar Telemetría",
+            .german: "Live-Telemetrie Starten"
+        ],
+        "telemetry_stop": [
+            .italian: "Ferma Telemetria",
+            .english: "Stop Telemetry",
+            .french: "Arrêter Télémétrie",
+            .spanish: "Detener Telemetría",
+            .german: "Telemetrie Stoppen"
+        ],
+        "telemetry_paused_notice": [
+            .italian: "Telemetria in pausa (Bus CAN libero per Diagnosi/Test)",
+            .english: "Telemetry paused (CAN Bus idle for Diagnostics/Tests)",
+            .french: "Télémétrie en pause (Bus CAN libre pour Diagnostic)",
+            .spanish: "Telemetría en pausa (Bus CAN libre para Diagnóstico)",
+            .german: "Telemetrie pausiert (CAN-Bus frei für Diagnose)"
+        ],
+        "telemetry_active_notice": [
+            .italian: "Telemetria live attiva (Aggiornamento continuo)",
+            .english: "Live telemetry active (Continuous streaming)",
+            .french: "Télémétrie live active (Flux continu)",
+            .spanish: "Telemetría activa (Flujo continuo)",
+            .german: "Live-Telemetrie aktiv (Kontinuierliches Streaming)"
+        ],
+        "samples_recorded": [
+            .italian: "Campioni registrati:",
+            .english: "Recorded samples:",
+            .french: "Échantillons enregistrés :",
+            .spanish: "Muestras registradas:",
+            .german: "Aufgezeichnete Werte:"
+        ],
+        
+        // Diagnostics (DTC)
+        "dtc_title": [
+            .italian: "Diagnosi DTC Centralina",
+            .english: "ECU DTC Diagnostics",
+            .french: "Diagnostic DTC Calculateur",
+            .spanish: "Diagnóstico DTC Centralita",
+            .german: "Steuergerät DTC-Diagnose"
+        ],
+        "scan_dtc_btn": [
+            .italian: "Scansione DTC (Mode 03/07/0A)",
+            .english: "Scan DTC (Mode 03/07/0A)",
+            .french: "Scanner DTC (Mode 03/07/0A)",
+            .spanish: "Escanear DTC (Mode 03/07/0A)",
+            .german: "DTC Scannen (Mode 03/07/0A)"
+        ],
+        "scanning": [
+            .italian: "Scansione in corso...",
+            .english: "Scanning in progress...",
+            .french: "Scan en cours...",
+            .spanish: "Escaneo en curso...",
+            .german: "Scan läuft..."
+        ],
+        "clear_dtc_btn": [
+            .italian: "Cancella Errori (Mode 04)",
+            .english: "Clear Codes (Mode 04)",
+            .french: "Effacer Codes (Mode 04)",
+            .spanish: "Borrar Códigos (Mode 04)",
+            .german: "Fehler Löschen (Mode 04)"
+        ],
+        "clearing": [
+            .italian: "Azzeramento in corso...",
+            .english: "Clearing in progress...",
+            .french: "Effacement en cours...",
+            .spanish: "Borrando códigos...",
+            .german: "Löschen läuft..."
+        ],
+        "ai_eval_btn": [
+            .italian: "Valutazione Diagnostica AI",
+            .english: "AI Diagnostic Analysis",
+            .french: "Analyse Diagnostique IA",
+            .spanish: "Evaluación Diagnóstica con IA",
+            .german: "KI-Diagnoseanalyse"
+        ],
+        "mil_on": [
+            .italian: "Spia Motore (MIL): ACCESA",
+            .english: "Check Engine (MIL): ON",
+            .french: "Voyant Moteur (MIL) : ALLUMÉ",
+            .spanish: "Testigo Motor (MIL): ENCENDIDO",
+            .german: "Motorkontrollleuchte (MIL): AN"
+        ],
+        "mil_off": [
+            .italian: "Spia Motore (MIL): SPENTA",
+            .english: "Check Engine (MIL): OFF",
+            .french: "Voyant Moteur (MIL) : ÉTEINT",
+            .spanish: "Testigo Motor (MIL): APAGADO",
+            .german: "Motorkontrollleuchte (MIL): AUS"
+        ],
+        "no_dtc_message": [
+            .italian: "Nessun codice errore DTC rilevato nella centralina.",
+            .english: "No DTC fault codes detected in ECU.",
+            .french: "Aucun code défaut DTC détecté dans le calculateur.",
+            .spanish: "No se detectaron códigos de avería DTC en la centralita.",
+            .german: "Keine DTC-Fehlercodes im Steuergerät erkannt."
+        ],
+        "confirm_clear_title": [
+            .italian: "Conferma Cancellazione Errori",
+            .english: "Confirm DTC Clearing",
+            .french: "Confirmer l'effacement",
+            .spanish: "Confirmar Borrado de Códigos",
+            .german: "Fehlerlöschung Bestätigen"
+        ],
+        "confirm_clear_msg": [
+            .italian: "Sei sicuro di voler azzerare tutti i codici errore registrati nella centralina?",
+            .english: "Are you sure you want to clear all fault codes stored in the ECU?",
+            .french: "Êtes-vous sûr de vouloir effacer tous les codes défaut mémorisés dans le calculateur ?",
+            .spanish: "¿Estás seguro de que deseas borrar todos los códigos de error almacenados en la centralita?",
+            .german: "Sind Sie sicher, dass Sie alle im Steuergerät gespeicherten Fehlercodes löschen möchten?"
+        ],
+        "cancel": [
+            .italian: "Annulla",
+            .english: "Cancel",
+            .french: "Annuler",
+            .spanish: "Cancelar",
+            .german: "Abbrechen"
+        ],
+        "confirm_delete": [
+            .italian: "Cancella DTC",
+            .english: "Clear DTC",
+            .french: "Effacer DTC",
+            .spanish: "Borrar DTC",
+            .german: "DTC Löschen"
+        ],
+        
+        // BLE Connection
+        "ble_title": [
+            .italian: "Gestione Connessione BLE",
+            .english: "BLE Connection Manager",
+            .french: "Gestion Connexion BLE",
+            .spanish: "Gestión de Conexión BLE",
+            .german: "BLE-Verbindungsmanager"
+        ],
+        "ble_scan_btn": [
+            .italian: "Scansione Adattatori OBD2",
+            .english: "Scan OBD2 Adapters",
+            .french: "Recherche Adaptateurs OBD2",
+            .spanish: "Buscar Adaptadores OBD2",
+            .german: "OBD2-Adapter Suchen"
+        ],
+        "ble_stop_scan_btn": [
+            .italian: "Ferma Scansione",
+            .english: "Stop Scan",
+            .french: "Arrêter Recherche",
+            .spanish: "Detener Búsqueda",
+            .german: "Suche Beenden"
+        ],
+        "ble_connect": [
+            .italian: "Connetti",
+            .english: "Connect",
+            .french: "Connecter",
+            .spanish: "Conectar",
+            .german: "Verbinden"
+        ],
+        "ble_disconnect": [
+            .italian: "Disconnetti",
+            .english: "Disconnect",
+            .french: "Déconnecter",
+            .spanish: "Desconectar",
+            .german: "Trennen"
+        ],
+        "ble_connected_to": [
+            .italian: "Connesso a:",
+            .english: "Connected to:",
+            .french: "Connecté à :",
+            .spanish: "Conectado a:",
+            .german: "Verbunden mit:"
+        ],
+        "ble_not_connected": [
+            .italian: "Non connesso ad alcun adattatore.",
+            .english: "Not connected to any adapter.",
+            .french: "Non connecté à un adaptateur.",
+            .spanish: "No conectado a ningún adaptador.",
+            .german: "Nicht mit einem Adapter verbunden."
+        ],
+        "ble_ext_mode": [
+            .italian: "Modalità Compatibilità Estesa (Tutti i BLE)",
+            .english: "Extended Compatibility Mode (All BLE)",
+            .french: "Mode Compatibilité Étendue (Tous BLE)",
+            .spanish: "Modo Compatibilidad Extendida (Todos BLE)",
+            .german: "Erweiterter Kompatibilitätsmodus (Alle BLE)"
+        ],
+        "ble_ext_desc": [
+            .italian: "Quando attiva mostra qualsiasi dispositivo BLE generico (ELM327). Quando disattivata filtra solo gli adattatori ad alte prestazioni certificati (UniCarScan, vLinker, OBDLink, Veepeak, Carista).",
+            .english: "When active, displays any generic BLE device (ELM327). When disabled, filters only high-performance certified adapters (UniCarScan, vLinker, OBDLink, Veepeak, Carista).",
+            .french: "Lorsqu'il est activé, affiche tous les appareils BLE génériques (ELM327). Désactivé, filtre uniquement les adaptateurs certifiés haute performance (UniCarScan, vLinker, OBDLink, Veepeak, Carista).",
+            .spanish: "Cuando está activo muestra cualquier dispositivo BLE genérico (ELM327). Cuando está desactivado filtra solo adaptadores certificados de alto rendimiento (UniCarScan, vLinker, OBDLink, Veepeak, Carista).",
+            .german: "Wenn aktiviert, zeigt es beliebige generische BLE-Geräte (ELM327). Wenn deaktiviert, werden nur zertifizierte Hochleistungsadapter gefiltert (UniCarScan, vLinker, OBDLink, Veepeak, Carista)."
+        ],
+        
+        // Terminal
+        "term_title": [
+            .italian: "Console Terminale OBD2",
+            .english: "OBD2 Terminal Console",
+            .french: "Console Terminal OBD2",
+            .spanish: "Consola Terminal OBD2",
+            .german: "OBD2-Terminal-Konsole"
+        ],
+        "term_desc": [
+            .italian: "Invia comandi personalizzati AT o CAN bus (es. 0100, 221101, ATZ):",
+            .english: "Send custom AT or CAN bus commands (e.g. 0100, 221101, ATZ):",
+            .french: "Envoyez des commandes personnalisées AT ou CAN bus (ex: 0100, 221101, ATZ) :",
+            .spanish: "Envía comandos personalizados AT o CAN bus (ej. 0100, 221101, ATZ):",
+            .german: "Benutzerdefinierte AT- oder CAN-Bus-Befehle senden (z.B. 0100, 221101, ATZ):"
+        ],
+        "term_send": [
+            .italian: "Invia",
+            .english: "Send",
+            .french: "Envoyer",
+            .spanish: "Enviar",
+            .german: "Senden"
+        ],
+        "term_clear": [
+            .italian: "Pulisci Console",
+            .english: "Clear Console",
+            .french: "Effacer Console",
+            .spanish: "Limpiar Consola",
+            .german: "Konsole Leeren"
+        ],
+        
+        // Actuators
+        "act_title": [
+            .italian: "Funzioni Speciali & Attuatori",
+            .english: "Special Functions & Actuators",
+            .french: "Fonctions Spéciales & Actionneurs",
+            .spanish: "Funciones Especiales y Actuadores",
+            .german: "Sonderfunktionen & Aktoren"
+        ],
+        "act_category": [
+            .italian: "Unità di Controllo",
+            .english: "Control Unit",
+            .french: "Unité de Contrôle",
+            .spanish: "Unidad de Control",
+            .german: "Steuergerät-Auswahl"
+        ],
+        "act_cat_engine": [
+            .italian: "Motore (FI ECU — ISC & Sonda O2)",
+            .english: "Engine (FI ECU — ISC & O2 Sensor)",
+            .french: "Moteur (FI ECU — ISC & Sonde O2)",
+            .spanish: "Motor (FI ECU — ISC y Sonda O2)",
+            .german: "Motor (FI ECU — ISC & Lambdasonde)"
+        ],
+        "act_cat_abs": [
+            .italian: "Unità Idraulica ABS",
+            .english: "ABS Hydraulic Unit",
+            .french: "Unité Hydraulique ABS",
+            .spanish: "Unidad Hidráulica ABS",
+            .german: "ABS-Hydraulikeinheit"
+        ],
+        "act_danger_title": [
+            .italian: "PERICOLO: MOTORE IN MOTO O RUOTE IN MOVIMENTO!",
+            .english: "DANGER: ENGINE RUNNING OR WHEELS IN MOTION!",
+            .french: "DANGER : MOTEUR EN MARCHE OU ROUES EN MOUVEMENT !",
+            .spanish: "¡PELIGRO: MOTOR EN MARCHA O RUEDAS EN MOVIMIENTO!",
+            .german: "GEFAHR: MOTOR LÄUFT ODER RÄDER DREHEN SICH!"
+        ],
+        "act_danger_msg": [
+            .italian: "I reset adattivi e i test idraulici sono disabilitati mentre il motore gira. Spegni il motore e lascia solo il quadro acceso (Key ON).",
+            .english: "Adaptive resets and hydraulic tests are disabled while the engine runs. Stop engine and keep ignition ON.",
+            .french: "Les réinitialisations adaptatives et tests hydrauliques sont désactivés pendant que le moteur tourne. Coupez le moteur et laissez le contact.",
+            .spanish: "Los reinicios adaptativos y pruebas hidráulicas están deshabilitados con el motor encendido. Apaga el motor y mantén el contacto.",
+            .german: "Adaptive Resets und Hydrauliktests sind bei laufendem Motor gesperrt. Motor ausschalten und nur Zündung eingeschaltet lassen."
+        ],
+        "act_ready_engine": [
+            .italian: "Motore fermo. Funzioni di verifica e reset adattivo FI ECU (7E0) sbloccate.",
+            .english: "Engine stopped. FI ECU (7E0) adaptive check and reset functions unlocked.",
+            .french: "Moteur arrêté. Fonctions de contrôle et réinitialisation adaptative FI ECU (7E0) déverrouillées.",
+            .spanish: "Motor apagado. Funciones de verificación y reinicio adaptativo FI ECU (7E0) desbloqueadas.",
+            .german: "Motor aus. FI ECU (7E0) Prüf- und adaptive Resetfunktionen freigeschaltet."
+        ],
+        "act_ready_abs": [
+            .italian: "Motore fermo e ruote ferme. Test Unità Idraulica ABS sbloccati.",
+            .english: "Engine and wheels stopped. ABS Hydraulic Unit tests unlocked.",
+            .french: "Moteur et roues à l'arrêt. Tests de l'unité hydraulique ABS déverrouillés.",
+            .spanish: "Motor y ruedas detenidas. Pruebas de la unidad hidráulica ABS desbloqueadas.",
+            .german: "Motor und Räder stillstehend. Tests der ABS-Hydraulikeinheit freigeschaltet."
+        ],
+        "act_start_btn": [
+            .italian: "Avvia Procedura",
+            .english: "Start Procedure",
+            .french: "Démarrer la Procédure",
+            .spanish: "Iniciar Procedimiento",
+            .german: "Vorgang Starten"
+        ],
+        "act_executing_btn": [
+            .italian: "Esecuzione in corso...",
+            .english: "Executing...",
+            .french: "Exécution en cours...",
+            .spanish: "Ejecutando...",
+            .german: "Wird ausgeführt..."
+        ],
+        "act_abs_running_title": [
+            .italian: "TEST POMPA ABS IN CORSO...",
+            .english: "ABS PUMP TEST RUNNING...",
+            .french: "TEST POMPE ABS EN COURS...",
+            .spanish: "TEST BOMBA ABS EN CURSO...",
+            .german: "ABS-PUMPENTEST LÄUFT..."
+        ],
+        "act_abs_running_desc": [
+            .italian: "Tieni saldamente premuti LEVA ANTERIORE e PEDALE POSTERIORE!",
+            .english: "Firmly squeeze FRONT LEVER and depress REAR PEDAL!",
+            .french: "Serrez fermement le LEVIER AVANT et la PÉDALE ARRIÈRE !",
+            .spanish: "¡Mantén presionados con firmeza la MANETA DELANTERA y el PEDAL TRASERO!",
+            .german: "VORDEREN HEBEL und HINTERES PEDAL fest gedrückt halten!"
+        ],
+        "act_abs_stop_btn": [
+            .italian: "Interrompi Test",
+            .english: "Stop Test",
+            .french: "Arrêter le Test",
+            .spanish: "Detener Test",
+            .german: "Test Abbrechen"
+        ],
+        "act_abs_alert_title": [
+            .italian: "Pronto per il Test Idraulico ABS?",
+            .english: "Ready for ABS Hydraulic Test?",
+            .french: "Prêt pour le Test Hydraulique ABS ?",
+            .spanish: "¿Listo para la Prueba Hidráulica ABS?",
+            .german: "Bereit für den ABS-Hydrauliktest?"
+        ],
+        "act_abs_alert_confirm": [
+            .italian: "Ho capito, Avvia il Test (12s)!",
+            .english: "Understood, Start Test (12s)!",
+            .french: "Compris, Démarrer le Test (12s) !",
+            .spanish: "¡Entendido, Iniciar Test (12s)!",
+            .german: "Verstanden, Test Starten (12s)!"
+        ],
+        "act_abs_alert_body": [
+            .italian: "⚠️ PROCEDURA UFFICIALE YAMAHA (Manuale pag. 4-65/4-67):\n\n1. Moto sul cavalletto centrale, motore spento, quadro su ON.\n2. Batteria sopra i 12.8V.\n3. PREMI E TIENI PREMUTI SALDAMENTE la LEVA del freno anteriore e il PEDALE del freno posteriore.\n4. Mantieni la pressione costante per tutti i 12 secondi del countdown.\n\nIl modulatore ABS attende 1 secondo di pressione simultanea, poi aziona la pompa e i solenoidi generando la pulsazione nell'ordine:\n1° Leva Anteriore\n2° Pedale Posteriore\n3° Leva Anteriore.",
+            .english: "⚠️ OFFICIAL YAMAHA PROCEDURE (Manual p. 4-65/4-67):\n\n1. Bike on centerstand, engine off, ignition ON.\n2. Battery above 12.8V.\n3. FIRMLY SQUEEZE the front brake lever and DEPRESS the rear brake pedal.\n4. Hold pressure steadily for all 12 seconds of the countdown.\n\nThe ABS hydraulic unit waits 1 second of simultaneous pressure, then cycles the pump and solenoid valves generating pulses in order:\n1st Front Lever\n2nd Rear Pedal\n3rd Front Lever.",
+            .french: "⚠️ PROCÉDURE OFFICIELLE YAMAHA (Manuel p. 4-65/4-67) :\n\n1. Moto sur la béquille centrale, moteur coupé, contact sur ON.\n2. Batterie supérieure à 12,8V.\n3. SERREZ FERMEMENT le levier avant et la pédale arrière.\n4. Maintenez la pression pendant les 12 secondes du compte à rebours.\n\nL'unité ABS attend 1 seconde de pression simultanée, puis active la pompe et les électrovannes avec pulsations dans l'ordre :\n1° Levier Avant\n2° Pédale Arrière\n3° Levier Avant.",
+            .spanish: "⚠️ PROCEDIMIENTO OFICIAL YAMAHA (Manual pág. 4-65/4-67):\n\n1. Moto en caballete central, motor apagado, contacto en ON.\n2. Batería superior a 12,8V.\n3. APRIETA CON FUERZA la maneta delantera y el pedal trasero.\n4. Mantén la presión durante los 12 segundos de la cuenta atrás.\n\nEl modulador ABS espera 1 segundo de presión simultánea y luego acciona la bomba y las electroválvulas pulsando en orden:\n1° Maneta Delantera\n2° Pedal Trasero\n3° Maneta Delantera.",
+            .german: "⚠️ OFFIZIELLER YAMAHA-ABLAUF (Handbuch S. 4-65/4-67):\n\n1. Motorrad auf Hauptständer, Motor aus, Zündung AN.\n2. Batteriespannung über 12,8V.\n3. Bremshebel vorne und Bremspedal hinten FEST GEDRÜCKT HALTEN.\n4. Druck während des gesamten 12-Sekunden-Countdowns halten.\n\nDas ABS-Aggregat wartet 1 Sekunde gleichzeitigen Druck ab und steuert dann Pumpe und Magnetventile in dieser Reihenfolge an:\n1. Handbremshebel\n2. Fußbremspedal\n3. Handbremshebel."
+        ],
+        
+        // Setup (Language + AI)
+        "setup_lang_section": [
+            .italian: "Lingua dell'Applicazione",
+            .english: "Application Language",
+            .french: "Langue de l'application",
+            .spanish: "Idioma de la aplicación",
+            .german: "App-Sprache"
+        ],
+        "setup_lang_desc": [
+            .italian: "Seleziona la lingua dell'interfaccia, dei menu e dei documenti legali.",
+            .english: "Select the language for user interface, menus and legal notices.",
+            .french: "Sélectionnez la langue de l'interface, des menus et des mentions légales.",
+            .spanish: "Selecciona el idioma de la interfaz, menús y documentos legales.",
+            .german: "Wählen Sie die Sprache für Benutzeroberfläche, Menüs und Rechtshinweise."
+        ],
+        "setup_ai_section": [
+            .italian: "Configurazione AI & Modelli LLM",
+            .english: "AI & LLM Model Configuration",
+            .french: "Configuration IA & Modèles LLM",
+            .spanish: "Configuración de IA y Modelos LLM",
+            .german: "KI- & LLM-Modellkonfiguration"
+        ],
+        "setup_ai_desc": [
+            .italian: "Personalizza il motore di intelligenza artificiale per diagnosi DTC e telemetria",
+            .english: "Customize AI engine for DTC diagnostics and telemetry analysis",
+            .french: "Personnalisez le moteur d'IA pour diagnostics DTC et télémétrie",
+            .spanish: "Personaliza el motor de IA para diagnósticos DTC y telemetría",
+            .german: "KI-Engine für DTC-Diagnose und Telemetrie anpassen"
+        ],
+        "setup_provider_label": [
+            .italian: "1. Provider Intelligenza Artificiale:",
+            .english: "1. AI Provider:",
+            .french: "1. Fournisseur d'IA :",
+            .spanish: "1. Proveedor de IA:",
+            .german: "1. KI-Anbieter:"
+        ],
+        "setup_model_label": [
+            .italian: "2. Modello LLM (Menu a tendina):",
+            .english: "2. LLM Model (Dropdown menu):",
+            .french: "2. Modèle LLM (Menu déroulant) :",
+            .spanish: "2. Modelo LLM (Menú desplegable):",
+            .german: "2. LLM-Modell (Dropdown-Menü):"
+        ],
+        "setup_sync_btn": [
+            .italian: "Sincronizza Nuove Release",
+            .english: "Sync New Releases",
+            .french: "Synchroniser Nouvelles Versions",
+            .spanish: "Sincronizar Nuevas Versiones",
+            .german: "Neue Versionen Synchronisieren"
+        ],
+        "setup_apikey_label": [
+            .italian: "3. Chiave API per",
+            .english: "3. API Key for",
+            .french: "3. Clé API pour",
+            .spanish: "3. Clave API para",
+            .german: "3. API-Schlüssel für"
+        ],
+        "setup_apikey_security": [
+            .italian: "La chiave API viene conservata localmente sul tuo dispositivo e inviata solo ed esclusivamente all'endpoint del provider selezionato.",
+            .english: "The API key is stored locally on your device and sent solely to the selected provider endpoint.",
+            .french: "La clé API est conservée localement sur votre appareil et envoyée uniquement au serveur du fournisseur sélectionné.",
+            .spanish: "La clave API se almacena localmente en tu dispositivo y se envía únicamente al proveedor seleccionado.",
+            .german: "Der API-Schlüssel wird lokal auf Ihrem Gerät gespeichert und ausschließlich an den ausgewählten Anbieter übertragen."
+        ],
+        "setup_providers_guide": [
+            .italian: "Guida ai Provider Supportati",
+            .english: "Supported Providers Guide",
+            .french: "Guide des Fournisseurs Supportés",
+            .spanish: "Guía de Proveedores Compatibles",
+            .german: "Leitfaden Unterstützte Anbieter"
+        ],
+        "setup_custom_model_name": [
+            .italian: "Nome Modello Personalizzato (es. llama3, mistral, qwen2.5):",
+            .english: "Custom Model Name (e.g. llama3, mistral, qwen2.5):",
+            .french: "Nom du modèle personnalisé (ex. llama3, mistral, qwen2.5) :",
+            .spanish: "Nombre del modelo personalizado (ej. llama3, mistral, qwen2.5):",
+            .german: "Benutzerdefinierter Modellname (z.B. llama3, mistral, qwen2.5):"
+        ],
+        "setup_custom_model_placeholder": [
+            .italian: "Nome modello",
+            .english: "Model name",
+            .french: "Nom du modèle",
+            .spanish: "Nombre del modelo",
+            .german: "Modellname"
+        ],
+        "setup_custom_endpoint_label": [
+            .italian: "Base URL Endpoint OpenAI-compatible:",
+            .english: "OpenAI-compatible Endpoint Base URL:",
+            .french: "URL de base du point de terminaison OpenAI-compatible :",
+            .spanish: "URL base del endpoint compatible con OpenAI:",
+            .german: "Basis-URL für OpenAI-kompatiblen Endpunkt:"
+        ],
+        "setup_selected_model_picker": [
+            .italian: "Modello Selezionato",
+            .english: "Selected Model",
+            .french: "Modèle sélectionné",
+            .spanish: "Modelo seleccionado",
+            .german: "Ausgewähltes Modell"
+        ],
+        
+        // Info & Legal Disclaimer
+        "info_title": [
+            .italian: "YaDiag — Guida & Modelli Compatibili",
+            .english: "YaDiag — Guide & Compatible Models",
+            .french: "YaDiag — Guide & Modèles Compatibles",
+            .spanish: "YaDiag — Guía y Modelos Compatibles",
+            .german: "YaDiag — Handbuch & Kompatible Modelle"
+        ],
+        "info_read_terms": [
+            .italian: "Rileggi Condizioni d'Uso & Disclaimer Legale",
+            .english: "Review Terms of Use & Legal Disclaimer",
+            .french: "Relire les Conditions d'Utilisation & Mentions Légales",
+            .spanish: "Releer Términos de Uso y Descargo Legal",
+            .german: "Nutzungsbedingungen & Haftungsausschluss erneut lesen"
+        ],
+        "disclaimer_title": [
+            .italian: "Condizioni d'Uso ed Esonero di Responsabilità",
+            .english: "Terms of Use & Limitation of Liability",
+            .french: "Conditions d'Utilisation & Limitation de Responsabilité",
+            .spanish: "Términos de Uso y Exoneración de Responsabilidad",
+            .german: "Nutzungsbedingungen & Haftungsausschluss"
+        ],
+        "disclaimer_version": [
+            .italian: "Versione Applicazione:",
+            .english: "Application Version:",
+            .french: "Version de l'application :",
+            .spanish: "Versión de la Aplicación:",
+            .german: "Anwendungsversion:"
+        ],
+        "disclaimer_checkbox": [
+            .italian: "Dichiaro di essere maggiorenne, di aver letto attentamente e compreso le condizioni d'uso e mi assumo la piena ed esclusiva responsabilità per qualsiasi utilizzo dell'applicazione sul motoveicolo.",
+            .english: "I certify that I am of legal age, have carefully read and understood the terms of use, and assume full and exclusive responsibility for any use of this application on the vehicle.",
+            .french: "Je déclare être majeur, avoir lu attentivement et compris les conditions d'utilisation, et j'assume l'entière responsabilité de toute utilisation de l'application sur le véhicule.",
+            .spanish: "Declaro ser mayor de edad, haber leído atentamente y comprendido las condiciones de uso, y asumo la total y exclusiva responsabilidad por cualquier uso de la aplicación en el vehículo.",
+            .german: "Ich erkläre, volljährig zu sein, die Nutzungsbedingungen aufmerksam gelesen und verstanden zu haben und übernehme die volle und ausschließliche Verantwortung für jegliche Nutzung der App am Fahrzeug."
+        ],
+        "disclaimer_accept": [
+            .italian: "Accetto e Assumo la Responsabilità",
+            .english: "Accept & Assume Full Responsibility",
+            .french: "J'accepte et j'assume la responsabilité",
+            .spanish: "Acepto y Asumo la Responsabilidad",
+            .german: "Ich akzeptiere und übernehme die Verantwortung"
+        ],
+        "disclaimer_close": [
+            .italian: "Chiudi (Condizioni già accettate)",
+            .english: "Close (Terms already accepted)",
+            .french: "Fermer (Conditions déjà acceptées)",
+            .spanish: "Cerrar (Condiciones ya aceptadas)",
+            .german: "Schließen (Bedingungen bereits akzeptiert)"
+        ],
+        "disclaimer_nav_title": [
+            .italian: "Informativa di Sicurezza & Condizioni Legali",
+            .english: "Safety Notice & Legal Terms",
+            .french: "Avis de Sécurité & Conditions Légales",
+            .spanish: "Aviso de Seguridad y Condiciones Legales",
+            .german: "Sicherheitshinweise & Rechtliche Bedingungen"
+        ]
+    ]
+    
+    // MARK: - Testi Legali Completi Tradotti per DisclaimerView
+    public struct DisclaimerArticle {
+        public let title: String
+        public let text: String
+    }
+    
+    public var disclaimerArticles: [DisclaimerArticle] {
+        switch currentLanguage {
+        case .italian:
+            return [
+                DisclaimerArticle(
+                    title: "1. Natura del Software e Scopo Informativo",
+                    text: "L'applicazione YaDiag è fornita 'NELLO STATO DI FATTO IN CUI SI TROVA' ('AS IS'), a titolo puramente amatoriale e di verifica tecnica. L'Applicazione non sostituisce l'assistenza ufficiale di officine autorizzate o le prescrizioni del manuale di servizio del costruttore."
+                ),
+                DisclaimerArticle(
+                    title: "2. Consapevolezza dei Rischi Tecnici e Meccanici",
+                    text: "L'invio di comandi diagnostici alla centralina motore (FI ECU) e ABS (inclusi spurgo pompe, reset ISC 0x54 e correzione O2/CO 0x52) comporta interventi diretti sul veicolo. Procedure errate su batterie scariche (< 12.8V) o a motore acceso possono causare malfunzionamenti o danni meccanici."
+                ),
+                DisclaimerArticle(
+                    title: "3. Esonero Totale di Responsabilità (Artt. 1229 e 2043 C.C.)",
+                    text: "Nei limiti massimi consentiti dalle leggi italiane ed europee (D.lgs. 206/2005 Codice del Consumo), lo sviluppatore declina ogni responsabilità per danni diretti, indiretti o incidentali (avarie al motore, danni elettrici/ABS, decadimento garanzia o sinistri) derivanti dall'uso dell'app."
+                ),
+                DisclaimerArticle(
+                    title: "4. Sicurezza Stradale e Normative Vigenti",
+                    text: "Tutti i test diagnostici e le cancellazioni errori devono essere eseguiti a veicolo fermo, in massima sicurezza e su suolo privato chiuso al traffico, nel rispetto del Codice della Strada (D.Lgs. 285/1992) e delle normative antinquinamento Euro 4 / Euro 5."
+                )
+            ]
+        case .english:
+            return [
+                DisclaimerArticle(
+                    title: "1. Software Nature & Informational Purpose",
+                    text: "The YaDiag application is provided 'AS IS', solely for technical and informational purposes. The Application does not in any way replace official authorized workshop service, certified technicians, or manufacturer workshop manuals."
+                ),
+                DisclaimerArticle(
+                    title: "2. Technical & Mechanical Risk Awareness",
+                    text: "Sending diagnostic commands to engine (FI ECU) and ABS units (including pump bleeding, ISC 0x54 adaptive resets and O2/CO 0x52 fuel trims) directly interacts with vehicle control units. Incorrect procedures on low battery (< 12.8V) or running engines may cause mechanical failures or stalls."
+                ),
+                DisclaimerArticle(
+                    title: "3. Full Limitation of Liability (EU Regulations)",
+                    text: "To the maximum extent permitted by EU consumer laws and applicable civil legislation, the developer disclaims all liability for any direct, indirect, incidental, or consequential damages (engine failure, electrical/ABS damage, warranty voiding, or accidents) arising from using this app."
+                ),
+                DisclaimerArticle(
+                    title: "4. Road Safety & Traffic Regulations",
+                    text: "All advanced diagnostic tests, actuator routines, and DTC erasures must be carried out strictly with the vehicle stationary, in safe conditions on private closed grounds, in full compliance with traffic safety laws and Euro 4 / Euro 5 emissions standards."
+                )
+            ]
+        case .french:
+            return [
+                DisclaimerArticle(
+                    title: "1. Nature du Logiciel & But Informatif",
+                    text: "L'application YaDiag est fournie 'EN L'ÉTAT' ('AS IS'), à titre technique et informatif. Elle ne remplace en aucun cas les ateliers agréés, les mécaniciens professionnels ni les manuels d'atelier officiels du constructeur."
+                ),
+                DisclaimerArticle(
+                    title: "2. Conscience des Risques Techniques & Mécaniques",
+                    text: "L'envoi de commandes aux calculateurs injection (FI ECU) et freinage (ABS ECU) — purge pompe ABS, reset adaptation ISC 0x54 et trims O2/CO 0x52 — modifie directement les paramètres véhicule. Une batterie faible (< 12.8V) ou un moteur tournant peut provoquer des pannes sévères."
+                ),
+                DisclaimerArticle(
+                    title: "3. Exonération Totale de Responsabilité (Droit UE)",
+                    text: "Dans les limites autorisées par le droit européen et le Code de la Consommation, le développeur décline toute responsabilité pour tout dommage direct, indirect ou accidentel (casse moteur, dégâts circuit de freinage/ABS, perte de garantie constructeur ou accidents)."
+                ),
+                DisclaimerArticle(
+                    title: "4. Sécurité Routière & Réglementation",
+                    text: "Tous les tests actionneurs et effacements de codes doivent être impérativement effectués sur véhicule à l'arrêt, en toute sécurité sur terrain privé fermé à la circulation, conformément au Code de la Route et aux normes d'émissions Euro 4 / Euro 5."
+                )
+            ]
+        case .spanish:
+            return [
+                DisclaimerArticle(
+                    title: "1. Naturaleza del Software y Propósito Informativo",
+                    text: "La aplicación YaDiag se proporciona 'TAL CUAL' ('AS IS'), con fines puramente técnicos e informativos. No sustituye en modo alguno a los talleres oficiales, mecánicos certificados ni a los manuales de servicio oficiales del fabricante."
+                ),
+                DisclaimerArticle(
+                    title: "2. Advertencia de Riesgos Técnicos y Mecánicos",
+                    text: "El envío de comandos a las centralitas de inyección (FI ECU) y frenos (ABS) — purga de bomba ABS, reinicio adaptativo ISC 0x54 y ajuste O2/CO 0x52 — modifica directamente los sistemas del vehículo. Procedimientos indebidos con batería baja (< 12.8V) pueden causar daños mecánicos o fallos."
+                ),
+                DisclaimerArticle(
+                    title: "3. Exoneración Total de Responsabilidad (Normativa UE)",
+                    text: "En la medida máxima permitida por la legislación europea y de consumo, el desarrollador declina toda responsabilidad por daños directos, indirectos o accidentales (averías de motor, daños eléctricos/ABS, anulación de garantía o accidentes) derivados del uso de la aplicación."
+                ),
+                DisclaimerArticle(
+                    title: "4. Seguridad Vial y Normativas Vigentes",
+                    text: "Todas las pruebas de diagnóstico y borrado de averías deben ejecutarse exclusivamente con el vehículo detenido, en condiciones seguras en recinto privado cerrado al tráfico, cumpliendo las leyes de seguridad vial y normativas Euro 4 / Euro 5."
+                )
+            ]
+        case .german:
+            return [
+                DisclaimerArticle(
+                    title: "1. Art der Software & Informationszweck",
+                    text: "Die Anwendung YaDiag wird 'WIE BESEHEN' ('AS IS') zu rein technischen Informations- und Prüfzwecken bereitgestellt. Sie ersetzt keinesfalls Vertragswerkstätten, qualifizierte Mechaniker oder offizielle Werkstatthandbücher des Herstellers."
+                ),
+                DisclaimerArticle(
+                    title: "2. Technische & Mechanische Risiken",
+                    text: "Diagnosebefehle an Motor- (FI ECU) und ABS-Steuergeräte (einschließlich ABS-Pumpenentlüftung, ISC 0x54 Leerlaufreset und O2/CO 0x52 Trims) greifen direkt in Regelsysteme ein. Unsachgemäße Bedienung bei schwacher Batterie (< 12.8V) kann Fehlfunktionen oder Schäden verursachen."
+                ),
+                DisclaimerArticle(
+                    title: "3. Vollständiger Haftungsausschluss (EU-Recht)",
+                    text: "Soweit gesetzlich nach EU-Verbraucherrichtlinien zulässig, lehnt der Entwickler jegliche Haftung für direkte, indirekte oder beiläufig entstandene Schäden (Motorschäden, Defekte an Elektrik/ABS, Erlöschen der Herstellergarantie oder Unfälle) vollumfänglich ab."
+                ),
+                DisclaimerArticle(
+                    title: "4. Verkehrssicherheit & Umweltnormen",
+                    text: "Alle erweiterten Stellgliedtests und Fehlerspeicherlöschungen dürfen ausschließlich bei stehendem Fahrzeug auf abgesperrtem Privatgelände unter strikter Einhaltung der Straßenverkehrsordnung und Euro-4 / Euro-5 Abgasnormen erfolgen."
+                )
+            ]
+        }
+    }
+}
