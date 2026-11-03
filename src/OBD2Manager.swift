@@ -221,8 +221,30 @@ class OBD2Manager: ObservableObject {
     func toggleDemoMode() {
         isDemoMode.toggle()
         if isDemoMode {
+            if !bleManager.isConnected {
+                bleManager.startVirtualSimulator()
+            }
             startDemoSimulation()
         } else {
+            if bleManager.isVirtualSimulator {
+                bleManager.stopVirtualSimulator()
+            }
+            stopDemoSimulation()
+        }
+    }
+    
+    func startVirtualSimulatorMode() {
+        bleManager.startVirtualSimulator()
+        if !isDemoMode {
+            isDemoMode = true
+            startDemoSimulation()
+        }
+    }
+    
+    func stopVirtualSimulatorMode() {
+        bleManager.stopVirtualSimulator()
+        if isDemoMode {
+            isDemoMode = false
             stopDemoSimulation()
         }
     }
@@ -260,6 +282,13 @@ class OBD2Manager: ObservableObject {
                 self.o2Voltage = 0.45 + (Double(step % 10) * 0.04)
                 self.batteryVoltage = "13.8V"
                 
+                // Mantiene i parametri simulati in BLEManager sincronizzati con la dinamica del banco
+                self.bleManager.simulatedRPM = self.rpm
+                self.bleManager.simulatedSpeed = self.speed
+                self.bleManager.simulatedCoolantTemp = self.temp
+                self.bleManager.simulatedIAT = self.iat
+                self.bleManager.simulatedTPS = self.tps
+                
                 if self.isRecording {
                     self.recordTelemetry()
                 }
@@ -267,15 +296,18 @@ class OBD2Manager: ObservableObject {
         }
         
         DispatchQueue.main.async {
-            self.dtcCodes = ["✅ Simulazione: Nessun errore attivo nella memoria ECU Motore (43 00)."]
-            self.absDtcCodes = ["🟢 Simulazione: Centralina ABS online (7EB). Nessun errore rilevato."]
-            self.iscLearningStatus = "Cil #1: 0x82F0 | Cil #2: 0x8435 | Cil #3: 0x8435\nStato: ✅ APPRESO REGOLARE"
-            self.o2LearningStatus = "Trim: 0x01FC / 0x0255 | Cicli: 0x000A\nStato: ✅ APPRESO REGOLARE"
+            self.dtcCodes = [
+                "P0115: Circuito Sensore Temperatura Refrigerante ECT (Guasto simulato)",
+                "P0130: Circuito Sensore Sonda Lambda O2 Banco 1 (Guasto simulato)"
+            ]
+            self.absDtcCodes = ["Codice ABS 41: Sensore velocità ruota anteriore (segnale anomalo / circuito aperto)"]
+            self.iscLearningStatus = "Cil #1: 0x82F0 | Cil #2: 0x8435 | Cil #3: 0x8435\nStato: 🟡 VALORI DEPOSITI MEDI (Reg. 0x54)"
+            self.o2LearningStatus = "Trim: 0x01FC / 0x0255 | Cicli: 0x000A\nStato: ✅ APPRESO REGOLARE (Reg. 0x52)"
             self.coCylindersStatus = "Cil #1: 0x82 (+2) | Cil #2: 0x80 (0) | Cil #3: 0x81 (+1)"
-            self.throttleCleaningLevel = 1
-            self.throttleDirtPercentage = 18.5
-            self.throttleCleaningStatus = "🟢 CORPI FARFALLATI PULITI (Compensazione ISC: 18.5%). Nessuna pulizia necessaria."
-            self.terminalOutput.append(TerminalLine(text: "[DEMO] Modalità Simulazione Demo attivata."))
+            self.throttleCleaningLevel = 2
+            self.throttleDirtPercentage = 42.0
+            self.throttleCleaningStatus = "🟡 DEPOSITI MEDI RILEVATI (Apertura compensata: 42%). Consigliata pulizia o reset ISC."
+            self.terminalOutput.append(TerminalLine(text: "[SIMULATORE] Adattatore Virtuale OBD2 connesso e attivo."))
         }
     }
     
@@ -852,7 +884,9 @@ class OBD2Manager: ObservableObject {
     
     func sendAnonymousTelemetryReport() {
         guard !isDemoMode else { return }
-        guard bleManager.isConnected, let peripheralName = bleManager.connectedPeripheral?.name, !peripheralName.isEmpty else { return }
+        guard bleManager.isConnected else { return }
+        let peripheralName = bleManager.connectedDeviceName
+        guard !peripheralName.isEmpty else { return }
         
         var canNodes: [String] = []
         if !dtcCodes.isEmpty && !dtcCodes.first!.contains("Nessuna risposta") {

@@ -819,25 +819,54 @@ struct ConnectionView: View {
             
             if bleManager.isConnected {
                 VStack(spacing: 12) {
-                    HStack {
-                        Image(systemName: "antenna.radiowaves.left.and.right")
-                            .foregroundColor(.green)
-                            .font(.title2)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(lang.t("ble_connected_to"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text(bleManager.connectedPeripheral?.name ?? "OBD Adapter")
-                                .font(.headline)
-                                .bold()
-                                .foregroundColor(.green)
+                    if bleManager.isVirtualSimulator {
+                        HStack {
+                            Image(systemName: "laptopcomputer.and.arrow.down")
+                                .foregroundColor(.purple)
+                                .font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("SIMULATORE BANCO PROVA ATTIVO")
+                                    .font(.caption2)
+                                    .bold()
+                                    .foregroundColor(.purple)
+                                Text(bleManager.connectedDeviceName)
+                                    .font(.headline)
+                                    .bold()
+                                    .foregroundColor(.primary)
+                                Text("Protocollo CAN Bus 500k ISO 15765-4 simulato (Nessun Bluetooth richiesto)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
                         }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.purple.opacity(0.12))
+                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.purple.opacity(0.3), lineWidth: 1))
+                        .padding(.horizontal)
+                    } else {
+                        HStack {
+                            Image(systemName: "antenna.radiowaves.left.and.right")
+                                .foregroundColor(.green)
+                                .font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(lang.t("ble_connected_to"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text(bleManager.connectedDeviceName)
+                                    .font(.headline)
+                                    .bold()
+                                    .foregroundColor(.green)
+                            }
+                            Spacer()
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
                     
                     Button(action: {
                         obd2Manager.startInitialization()
@@ -860,11 +889,15 @@ struct ConnectionView: View {
                     .padding(.horizontal)
                     
                     Button(action: {
-                        bleManager.disconnect()
+                        if bleManager.isVirtualSimulator {
+                            obd2Manager.stopVirtualSimulatorMode()
+                        } else {
+                            bleManager.disconnect()
+                        }
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: "xmark.circle.fill")
-                            Text(lang.t("ble_disconnect"))
+                            Text(bleManager.isVirtualSimulator ? "Disconnetti Simulatore" : lang.t("ble_disconnect"))
                                 .font(.system(size: 14, weight: .semibold))
                         }
                         .frame(maxWidth: .infinity)
@@ -878,6 +911,50 @@ struct ConnectionView: View {
                     .padding(.top, 4)
                 }
             } else {
+                // Card Modalità Simulatore Senza Adattatore
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.laptopcomputer")
+                            .font(.system(size: 20))
+                            .foregroundColor(.purple)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Simulatore OBD2 Virtuale (Offline)")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.purple)
+                            Text("Testa tutte le funzionalità dell'app senza moto né adattatore fisico.")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Button(action: {
+                        obd2Manager.startVirtualSimulatorMode()
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Connetti Adattatore Virtuale (Simulatore)")
+                                .font(.system(size: 13, weight: .bold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.85)
+                        }
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(colors: [Color.purple.opacity(0.9), Color.indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .shadow(color: Color.purple.opacity(0.3), radius: 3, x: 0, y: 2)
+                    }
+                }
+                .padding(12)
+                .background(Color.purple.opacity(0.08))
+                .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.purple.opacity(0.3), lineWidth: 1))
+                .padding(.horizontal)
+                .padding(.bottom, 6)
+                
                 Button(action: {
                     bleManager.scan()
                 }) {

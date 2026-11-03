@@ -52,6 +52,9 @@ struct ActuatorTestView: View {
     ]
     
     var isEngineRunning: Bool {
+        if obd2Manager.isDemoMode {
+            return false // In modalità simulazione consente il test completo delle procedure di reset e attuatori
+        }
         return obd2Manager.rpm > 0 || obd2Manager.speed > 0
     }
     
