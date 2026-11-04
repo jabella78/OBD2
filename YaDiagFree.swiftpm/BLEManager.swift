@@ -239,9 +239,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             // Attuatori & Registri Apprendimento (7E0 / 7E8)
             else if clean == "2154" { // Lettura registro 0x54 (Minimo ISC)
                 if self.simulatedISCLearned {
-                    response = self.virtualATH ? "7E8 07 61 54 82 F0 84 35\r\r>" : "61 54 82 F0 84 35\r\r>"
+                    response = self.virtualATH ? "7E8 07 61 54 82 F0 84 35 84 35\r\r>" : "61 54 82 F0 84 35 84 35\r\r>"
                 } else {
-                    response = self.virtualATH ? "7E8 07 61 54 80 00 80 00\r\r>" : "61 54 80 00 80 00\r\r>"
+                    response = self.virtualATH ? "7E8 07 61 54 80 00 80 00 80 00\r\r>" : "61 54 80 00 80 00 80 00\r\r>"
                 }
             } else if clean == "3B5401" { // Reset registro 0x54 (Minimo ISC)
                 self.simulatedISCLearned = false

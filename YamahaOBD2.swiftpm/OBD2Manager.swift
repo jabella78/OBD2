@@ -140,6 +140,12 @@ class OBD2Manager: ObservableObject {
     @Published var ecuCode67Flag: String = ""
     @Published var ecuCode87Flag: String = ""
     
+    // Tracciamento stato esecuzione reset per conferma effettiva
+    private var isExecutingISCReset: Bool = false
+    private var preResetISCSnapshot: (w1: String, w2: String, w3: String)? = nil
+    private var isExecutingO2Reset: Bool = false
+    private var preResetO2Snapshot: (trim1: String, trim2: String)? = nil
+    
     func localizedThrottleCleaningStatus(for lang: AppLanguage? = nil) -> String {
         let l = lang ?? LocalizationManager.shared.currentLanguage
         if ecuCode67Flag == "0002" {
@@ -1007,6 +1013,8 @@ class OBD2Manager: ObservableObject {
             DispatchQueue.main.async {
                 self.lastABSRawTrace.removeAll()
                 if code == 67 {
+                    self.isExecutingISCReset = true
+                    self.preResetISCSnapshot = (self.iscW1, self.iscW2, self.iscW3)
                     self.actuatorStatusMessage = self.localizedMsg(
                         en: "⏳ Executing Throttle Body / ISC Idle Learning Reset (Code 67 -> 3B 54 01)...",
                         it: "⏳ Esecuzione Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67 -> 3B 54 01)...",
@@ -1015,6 +1023,8 @@ class OBD2Manager: ObservableObject {
                         de: "⏳ Ausführung Drosselklappen- / ISC-Leerlaufreset (Code 67 -> 3B 54 01)..."
                     )
                 } else if code == 87 {
+                    self.isExecutingO2Reset = true
+                    self.preResetO2Snapshot = (self.o2Trim1, self.o2Trim2)
                     self.actuatorStatusMessage = self.localizedMsg(
                         en: "⏳ Executing O2 Lambda Fuel Trim Reset (Code 87 -> 3B 52 01)...",
                         it: "⏳ Esecuzione Reset Apprendimento Sonda Lambda O2 (Cod. 87 -> 3B 52 01)...",
@@ -1062,6 +1072,28 @@ class OBD2Manager: ObservableObject {
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
                 self.isReadingErrors = false
+                DispatchQueue.main.async {
+                    if self.isExecutingISCReset {
+                        self.isExecutingISCReset = false
+                        self.actuatorStatusMessage = self.localizedMsg(
+                            en: "⚠️ ISC Reset timeout: no response received for register 0x54 (21 54).",
+                            it: "⚠️ Timeout Reset ISC: nessuna risposta ricevuta per il registro 0x54 (21 54).",
+                            fr: "⚠️ Délai d'attente Reset ISC dépassé : aucune réponse pour le registre 0x54 (21 54).",
+                            es: "⚠️ Tiempo de espera agotado: sin respuesta para el registro ISC 0x54 (21 54).",
+                            de: "⚠️ ISC-Reset Timeout: Keine Antwort für Register 0x54 (21 54) erhalten."
+                        )
+                    }
+                    if self.isExecutingO2Reset {
+                        self.isExecutingO2Reset = false
+                        self.actuatorStatusMessage = self.localizedMsg(
+                            en: "⚠️ O2 Reset timeout: no response received for register 0x52 (21 52).",
+                            it: "⚠️ Timeout Reset O2: nessuna risposta ricevuta per il registro 0x52 (21 52).",
+                            fr: "⚠️ Délai d'attente Reset O2 dépassé : aucune réponse pour le registre 0x52 (21 52).",
+                            es: "⚠️ Tiempo de espera agotado: sin respuesta para el registro O2 0x52 (21 52).",
+                            de: "⚠️ O2-Reset Timeout: Keine Antwort für Register 0x52 (21 52) erhalten."
+                        )
+                    }
+                }
             }
         }
     }
@@ -1370,19 +1402,29 @@ class OBD2Manager: ObservableObject {
             DispatchQueue.main.async {
                 if payload.contains("7B54") {
                     self.actuatorStatusMessage = self.localizedMsg(
-                        en: "✅ Throttle Bodies / ISC Idle Learning Reset (Code 67) completed successfully (7E8 -> 7B 54)!",
-                        it: "✅ Reset Apprendimento Corpi Farfallati / Minimo ISC (Cod. 67) eseguito con successo (7E8 -> 7B 54)!",
-                        fr: "✅ Réinitialisation Apprentissage Ralenti ISC (Code 67) effectuée avec succès (7E8 -> 7B 54) !",
-                        es: "✅ Reinicio Aprendizaje Ralentí ISC (Cód. 67) realizado con éxito (7E8 -> 7B 54)!",
-                        de: "✅ Reset Drosselklappen- / ISC-Leerlaufadaption (Code 67) erfolgreich ausgeführt (7E8 -> 7B 54)!"
+                        en: "⏳ Reset command accepted by ECU (7E8 -> 7B 54). Verifying idle learning reset...",
+                        it: "⏳ Comando accettato dalla centralina (7E8 -> 7B 54). Verifica azzeramento valori in corso...",
+                        fr: "⏳ Commande acceptée par l'ECU (7E8 -> 7B 54). Vérification de la réinitialisation...",
+                        es: "⏳ Comando aceptado por la ECU (7E8 -> 7B 54). Verificando reinicio de valores...",
+                        de: "⏳ Befehl vom Steuergerät akzeptiert (7E8 -> 7B 54). Überprüfung der Rücksetzung..."
                     )
                 } else if payload.contains("7B52") {
                     self.actuatorStatusMessage = self.localizedMsg(
-                        en: "✅ O2 Lambda Closed-Loop Learning Reset (Code 87) completed successfully (7E8 -> 7B 52)!",
-                        it: "✅ Reset Apprendimento Sonda Lambda O2 (Cod. 87) eseguito con successo (7E8 -> 7B 52)!",
-                        fr: "✅ Réinitialisation Sonde Lambda O2 (Code 87) effectuée avec succès (7E8 -> 7B 52) !",
-                        es: "✅ Reinicio Sonda Lambda O2 (Cód. 87) realizado con éxito (7E8 -> 7B 52)!",
-                        de: "✅ Reset Lambdasonden-Gemischadaption (Code 87) erfolgreich ausgeführt (7E8 -> 7B 52)!"
+                        en: "⏳ O2 reset command accepted by ECU (7E8 -> 7B 52). Verifying fuel trim reset...",
+                        it: "⏳ Comando accettato dalla centralina (7E8 -> 7B 52). Verifica azzeramento trim O2 in corso...",
+                        fr: "⏳ Commande acceptée par l'ECU (7E8 -> 7B 52). Vérification du trim O2...",
+                        es: "⏳ Comando aceptado por la ECU (7E8 -> 7B 52). Verificando reinicio del trim O2...",
+                        de: "⏳ Befehl vom Steuergerät akzeptiert (7E8 -> 7B 52). Überprüfung des Lambdatrims..."
+                    )
+                } else if payload.contains("7F3B") {
+                    self.isExecutingISCReset = false
+                    self.isExecutingO2Reset = false
+                    self.actuatorStatusMessage = self.localizedMsg(
+                        en: "❌ Reset request rejected by Engine ECU (7E8 -> 7F 3B): \(rawWithSpaces)",
+                        it: "❌ Richiesta di reset rifiutata dalla centralina Motore (7E8 -> 7F 3B): \(rawWithSpaces)",
+                        fr: "❌ Demande de réinitialisation rejetée par l'ECU Moteur (7E8 -> 7F 3B) : \(rawWithSpaces)",
+                        es: "❌ Solicitud de reinicio rechazada por la ECU Motor (7E8 -> 7F 3B): \(rawWithSpaces)",
+                        de: "❌ Reset-Anforderung vom Motorsteuergerät abgelehnt (7E8 -> 7F 3B): \(rawWithSpaces)"
                     )
                 } else if payload.contains("71") || payload.contains("6F") || payload.contains("70") {
                     self.actuatorStatusMessage = self.localizedMsg(
@@ -1750,8 +1792,9 @@ class OBD2Manager: ObservableObject {
                 // Valore originale pre-reset: 9092 7F47 7F20 | Valore riappreso: 82F0 8435 8435 | Azzerato: 8000 8000 8000
                 let w1 = String(dataHex.prefix(4))
                 let w2 = String(dataHex.dropFirst(4).prefix(4))
-                let w3 = String(dataHex.dropFirst(8).prefix(4))
-                let isReset = (w1 == "8000" && w2 == "8000" && w3 == "8000")
+                let rawW3 = String(dataHex.dropFirst(8).prefix(4))
+                let w3 = rawW3.isEmpty ? w2 : rawW3
+                let isReset = (w1 == "8000" && w2 == "8000" && (w3 == "8000" || rawW3.isEmpty))
                 self.iscW1 = w1
                 self.iscW2 = w2
                 self.iscW3 = w3
@@ -1777,6 +1820,41 @@ class OBD2Manager: ObservableObject {
                 } else {
                     self.throttleCleaningLevel = 3
                 }
+                
+                if self.isExecutingISCReset {
+                    self.isExecutingISCReset = false
+                    let wasAlreadyReset = (self.preResetISCSnapshot?.w1 == "8000" &&
+                                           self.preResetISCSnapshot?.w2 == "8000" &&
+                                           (self.preResetISCSnapshot?.w3 == "8000" || self.preResetISCSnapshot?.w3 == "--"))
+                    
+                    if isReset {
+                        if wasAlreadyReset && self.preResetISCSnapshot?.w1 != "--" {
+                            self.actuatorStatusMessage = self.localizedMsg(
+                                en: "ℹ️ ISC values were already at factory zero (8000 8000 8000).",
+                                it: "ℹ️ I valori ISC erano già azzerati allo zero di fabbrica (8000 8000 8000).",
+                                fr: "ℹ️ Les valeurs ISC étaient déjà réinitialisées au zéro d'usine (8000 8000 8000).",
+                                es: "ℹ️ Los valores ISC ya estaban restablecidos al cero de fábrica (8000 8000 8000).",
+                                de: "ℹ️ ISC-Werte waren bereits auf Werksnull zurückgesetzt (8000 8000 8000)."
+                            )
+                        } else {
+                            self.actuatorStatusMessage = self.localizedMsg(
+                                en: "✅ Throttle Bodies / ISC Idle Reset CONFIRMED! Values reset to factory zero (8000 8000 8000).",
+                                it: "✅ Reset Apprendimento Corpi Farfallati / Minimo ISC CONFERMATO! Valori azzerati a 8000 8000 8000.",
+                                fr: "✅ Réinitialisation Ralenti ISC CONFIRMÉE ! Valeurs réinitialisées à 8000 8000 8000.",
+                                es: "✅ ¡Reinicio Aprendizaje Ralentí ISC CONFIRMADO! Valores restablecidos a 8000 8000 8000.",
+                                de: "✅ Drosselklappen- / ISC-Leerlaufreset BESTÄTIGT! Werte auf Werksnull 8000 8000 8000 zurückgesetzt."
+                            )
+                        }
+                    } else {
+                        self.actuatorStatusMessage = self.localizedMsg(
+                            en: "⚠️ Command accepted (7B 54), but ISC values NOT reset (\(w1) \(w2) \(w3)). Reset did not take effect.",
+                            it: "⚠️ Comando accettato dalla centralina (7B 54), ma i valori ISC NON risultano azzerati (\(w1) \(w2) \(w3)). Reset non avvenuto.",
+                            fr: "⚠️ Commande acceptée (7B 54), mais valeurs ISC NON réinitialisées (\(w1) \(w2) \(w3)).",
+                            es: "⚠️ Comando aceptado (7B 54), pero los valores ISC NO están restablecidos (\(w1) \(w2) \(w3)).",
+                            de: "⚠️ Befehl akzeptiert (7B 54), aber ISC-Werte NICHT zurückgesetzt (\(w1) \(w2) \(w3))."
+                        )
+                    }
+                }
             case "52":
                 // Apprendimento Sonda Lambda O2 (Cod. 87)
                 // Originale pre-reset: 0002 01FC 0255 000A | Valore azzerato: 0001 0200 0200 0001
@@ -1789,6 +1867,38 @@ class OBD2Manager: ObservableObject {
                 self.o2Cycles = count
                 self.isO2Reset = (trim1 == "0200" && trim2 == "0200")
                 self.isReadingEngineParams = false
+                
+                if self.isExecutingO2Reset {
+                    self.isExecutingO2Reset = false
+                    let wasAlreadyReset = (self.preResetO2Snapshot?.trim1 == "0200" && self.preResetO2Snapshot?.trim2 == "0200")
+                    if self.isO2Reset {
+                        if wasAlreadyReset && self.preResetO2Snapshot?.trim1 != "--" {
+                            self.actuatorStatusMessage = self.localizedMsg(
+                                en: "ℹ️ O2 Lambda trim was already at factory neutral baseline (0200 / 0200).",
+                                it: "ℹ️ I valori Trim Sonda Lambda O2 erano già neutri di fabbrica (0200 / 0200).",
+                                fr: "ℹ️ Les trims Sonde Lambda O2 étaient déjà neutres d'usine (0200 / 0200).",
+                                es: "ℹ️ Los trims de la Sonda Lambda O2 ya estaban en neutro de fábrica (0200 / 0200).",
+                                de: "ℹ️ Lambdatrim-Werte waren bereits auf Werksneutralwert (0200 / 0200)."
+                            )
+                        } else {
+                            self.actuatorStatusMessage = self.localizedMsg(
+                                en: "✅ O2 Lambda Fuel Trim Reset CONFIRMED! Trim reset to neutral (0200 / 0200).",
+                                it: "✅ Reset Apprendimento Sonda Lambda O2 CONFERMATO! Trim azzerato a neutro (0200 / 0200).",
+                                fr: "✅ Réinitialisation Trim Lambda O2 CONFIRMÉE ! Valeurs neutres (0200 / 0200).",
+                                es: "✅ ¡Reinicio Trim Sonda Lambda O2 CONFIRMADO! Valores en neutro (0200 / 0200).",
+                                de: "✅ Lambdasonden-Gemischadaptions-Reset BESTÄTIGT! Neutralwerte (0200 / 0200)."
+                            )
+                        }
+                    } else {
+                        self.actuatorStatusMessage = self.localizedMsg(
+                            en: "⚠️ Command accepted (7B 52), but O2 trims NOT reset (\(trim1) / \(trim2)).",
+                            it: "⚠️ Comando accettato dalla centralina (7B 52), ma i trim O2 NON risultano azzerati (\(trim1) / \(trim2)).",
+                            fr: "⚠️ Commande acceptée (7B 52), mais trims O2 NON réinitialisés (\(trim1) / \(trim2)).",
+                            es: "⚠️ Comando aceptado (7B 52), pero los trims O2 NO están restablecidos (\(trim1) / \(trim2)).",
+                            de: "⚠️ Befehl akzeptiert (7B 52), aber O2-Trims NICHT zurückgesetzt (\(trim1) / \(trim2))."
+                        )
+                    }
+                }
             case "58":
                 // Registro 0x58: <TargetISC 16-bit> <Flag Cod. 67 (00=Azzerato, 01=OK, 02=Pulizia Necessaria)> <Flag Cod. 87>
                 let p1 = String(dataHex.prefix(4))
