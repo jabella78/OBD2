@@ -53,6 +53,11 @@ rm -rf /Applications/YaDiag.app /Applications/YamahaOBD2.app
 cp -R YaDiag.app /Applications/YaDiag.app
 echo "✅ macOS App unificata (tutte le funzioni attive) pronta in /Applications/YaDiag.app"
 
+if [ -f /Users/jabella78/Documents/OBD2/build_android.sh ]; then
+    chmod +x /Users/jabella78/Documents/OBD2/build_android.sh
+    /Users/jabella78/Documents/OBD2/build_android.sh
+fi
+
 echo "=== 3/3 Compilazione iOS per App Store ($TARGET) ==="
 DEVICE_CONNECTED=$(xcrun devicectl list devices 2>/dev/null | grep "iPhone Privato" | grep -E "(connected|available)" || true)
 

@@ -1,0 +1,9 @@
+# Android Keystore & Secret Properties (NEVER commit to public Git)
+*.jks
+*.keystore
+YaDiagAndroid/keystore.properties
+YaDiagAndroid/local.properties
+YaDiagAndroid/.gradle/
+YaDiagAndroid/build/
+YaDiagAndroid/app/build/
+.DS_Store

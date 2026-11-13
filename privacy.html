@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - YaDiag Free & YaDiag Pro</title>
+    <title>Privacy Policy - YaDiag Free &amp; YaDiag Pro (iOS &amp; Android)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -30,39 +30,40 @@
 </head>
 <body>
 <div class="container">
-    <span class="badge">Privacy Statement</span>
+    <span class="badge">Privacy Statement (iOS &amp; Android)</span>
     <h1>Privacy Policy - YaDiag Free &amp; YaDiag Pro</h1>
-    <p><em>Last updated: November 3, 2026</em></p>
+    <p><em>Last updated: November 13, 2026</em></p>
 
-    <p>This Privacy Policy outlines how data is handled by <strong>YaDiag Free</strong> and <strong>YaDiag Pro</strong> (hereinafter referred to as the "Application"), developed by Jacopo Bellarosa.</p>
+    <p>This Privacy Policy outlines how data is handled by <strong>YaDiag Free</strong> (<code>com.jabella78.yadiag.free</code>) and <strong>YaDiag Pro</strong> (<code>com.jabella78.yadiag.pro</code>) across Apple iOS/iPadOS and Google Android platforms (hereinafter referred to as the "Application"), developed by Jacopo Bellarosa.</p>
 
     <h2>1. Core Principles &amp; Zero Tracking</h2>
     <p>User privacy is a core architectural principle of our software. The Application:</p>
     <ul>
         <li><strong>Does NOT collect personally identifiable information</strong> (such as name, email, phone number, or IP address).</li>
-        <li><strong>Does NOT use third-party advertising SDKs or frameworks</strong>.</li>
-        <li><strong>Does NOT track user activity</strong> across other companies' apps or websites (No IDFA or tracking, compliant with Apple App Tracking Transparency guidelines).</li>
+        <li><strong>Does NOT use third-party advertising SDKs or analytics tracking frameworks</strong>.</li>
+        <li><strong>Does NOT track user activity</strong> across other companies' apps or websites (No IDFA on iOS and no Advertising ID on Android, compliant with Apple App Tracking Transparency and Google Play Data Safety guidelines).</li>
     </ul>
 
-    <h2>2. Bluetooth Low Energy (BLE) Usage</h2>
-    <p>The Application requests system permission to access Bluetooth exclusively to communicate locally with standard OBD2 diagnostic adapters (e.g., vLinker MC+, UniCarScan UCSI-2100, OBDLink CX/MX+) and transmit diagnostic frames over KWP2000 / UDS / ISO 15765-4 bus with the motorcycle's onboard ECUs.</p>
+    <h2>2. Bluetooth Low Energy (BLE) &amp; Classic SPP Usage</h2>
+    <p>The Application requests system permission to access Bluetooth exclusively to communicate locally with standard OBD2 diagnostic adapters (e.g., vLinker MC+/BM+/FD+, UniCarScan UCSI-2100, OBDLink CX/MX+) and transmit diagnostic frames over KWP2000 / UDS / ISO 15765-4 CAN-bus with the motorcycle's onboard ECUs.</p>
     <ul>
-        <li>Telemetry data exchanged via Bluetooth (engine RPM, vehicle speed, temperatures, Diagnostic Trouble Codes) remains strictly in the volatile memory of your iPhone.</li>
-        <li>No geographical location or driving history data is ever derived, stored, or transmitted.</li>
+        <li>On Android 12+ (API 31+), the <code>BLUETOOTH_SCAN</code> permission is strictly declared with <code>android:usesPermissionFlags="neverForLocation"</code>.</li>
+        <li>Telemetry data exchanged via Bluetooth (engine RPM, vehicle speed, temperatures, Diagnostic Trouble Codes) remains strictly in the local memory of your iPhone or Android device.</li>
+        <li>No geographical location (GPS) or personal driving history data is ever derived, stored, or transmitted.</li>
     </ul>
 
-    <h2>3. On-Device Local Storage (Keychain &amp; UserDefaults)</h2>
+    <h2>3. On-Device Local Storage (Keychain / Keystore &amp; Preferences)</h2>
     <p>The Application stores on the user's device:</p>
     <ul>
-        <li><strong>UserDefaults:</strong> User interface language preferences, units of measurement, and acknowledgment of safety disclaimers (Apple required reason code: <code>CA92.1</code>).</li>
-        <li><strong>Apple Keychain:</strong> If the user chooses to configure an optional API key for the AI Diagnostic Advisor (BYOK - Bring Your Own Key), that credential is encrypted and stored exclusively in the on-device Apple Keychain. It is never synced or sent to our servers.</li>
+        <li><strong>UserDefaults (iOS) / SharedPreferences (Android):</strong> User interface language preferences, units of measurement, and acknowledgment of safety disclaimers (Apple required reason code: <code>CA92.1</code>).</li>
+        <li><strong>Apple Keychain (iOS) / Android Keystore &amp; EncryptedSharedPreferences AES-256 (Android):</strong> If the user chooses to configure an optional API key for the AI Diagnostic Advisor (BYOK - Bring Your Own Key), that credential is encrypted and stored exclusively in the hardware-backed secure storage of the user's device. It is never synced or sent to developer servers.</li>
     </ul>
 
-    <h2>4. AI Diagnostic Advisor (Optional Feature)</h2>
-    <p>The AI Diagnostic Advisor is completely optional. Any telemetry data submitted for analysis includes only anonymous engine parameters and DTC fault codes (RPM, TPS, sensor voltages). Data is transmitted over encrypted HTTPS directly to the official endpoint of the AI provider chosen by the user, only after explicit user confirmation. No motorcycle identifiers or personal user data are attached.</p>
+    <h2>4. AI Diagnostic Advisor &amp; Anonymous Telemetry (Optional Features)</h2>
+    <p>The AI Diagnostic Advisor is completely optional. Any telemetry data submitted for analysis includes only anonymous engine parameters and DTC fault codes (RPM, TPS, sensor voltages, ISC/O2 adaptation statuses). Data is transmitted over encrypted HTTPS directly to the official endpoint of the AI provider chosen by the user, only after explicit user confirmation. No personal user identifiers or vehicle VINs are attached.</p>
 
-    <h2>5. User Rights &amp; Contact</h2>
-    <p>Since the Application does not store or process personal data on external servers, no user profiles exist. For any technical questions or inquiries regarding this policy, please contact:</p>
+    <h2>5. User Rights, Data Deletion &amp; Contact</h2>
+    <p>Since the Application does not create user accounts or store personal data on external servers, all local preferences and API keys can be permanently erased at any time simply by uninstalling the Application or clearing app storage in iOS/Android settings. For any technical questions or inquiries regarding this policy, please contact:</p>
     <p><strong>Technical Support &amp; Developer:</strong> Jacopo Bellarosa<br>
     <strong>Email:</strong> support@yadiag.app (or jabella78@gmail.com)</p>
 </div>
